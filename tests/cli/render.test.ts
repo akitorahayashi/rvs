@@ -31,6 +31,9 @@ describe('render command', () => {
 
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain('Usage:');
+    expect(result.stdout).toContain('serve');
+    expect(result.stdout).toContain('tts <project>');
+    expect(result.stdout).toContain('srt <project>');
     expect(result.stdout).toContain('render <project>');
   });
 
@@ -46,6 +49,30 @@ describe('render command', () => {
 
     expect(result.exitCode).toBe(1);
     expect(result.stderr).toContain('missing required args');
+    expect(result.stdout).toContain('Usage:');
+  });
+
+  test('fails when a required tts project is missing', () => {
+    const result = runCli(['tts']);
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toContain('missing required args');
+    expect(result.stdout).toContain('Usage:');
+  });
+
+  test('fails when a required srt project is missing', () => {
+    const result = runCli(['srt']);
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toContain('missing required args');
+    expect(result.stdout).toContain('Usage:');
+  });
+
+  test('fails for unexpected serve positional arguments', () => {
+    const result = runCli(['serve', 'extra']);
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toContain('Unexpected positional arguments: extra.');
     expect(result.stdout).toContain('Usage:');
   });
 

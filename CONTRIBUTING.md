@@ -2,8 +2,8 @@
 
 ## Scope
 
-`rvs` is a Bun and TypeScript CLI for rendering Remotion vertical shorts from
-project directories.
+`rvs` is a Bun and TypeScript CLI for preparing and rendering Remotion vertical
+shorts from project directories.
 
 The repository owns:
 
@@ -11,6 +11,9 @@ The repository owns:
 - the CLI boundary in `src/rvs/cli/`
 - the application layer in `src/rvs/app/`
 - the project contract in `src/rvs/projects/`
+- the caption block contract in `src/rvs/caption-blocks/`
+- the narration audio contract in `src/rvs/audio/`
+- the VOICEVOX client in `src/rvs/voicevox/`
 - the subtitle contract in `src/rvs/subtitles/`
 - the Remotion composition in `src/rvs/composition/`
 - direct Remotion rendering in `src/rvs/remotion/`
@@ -25,6 +28,8 @@ The repository owns:
 The repository-owned tasks are:
 
 - `bun run rvs render <project-id>`
+- `bun run rvs tts <project-id>`
+- `bun run rvs srt <project-id>`
 - `bun run fix`
 - `bun run check`
 - `bun run test`
