@@ -12,8 +12,7 @@ shorts from project directories.
 - Install dependencies with `bun install`.
 - Start the local VOICEVOX engine with `bun run serve` or `bun run s`.
 - Run the CLI with `bun run rvs tts <project-id>`,
-  `bun run rvs srt <project-id>`, `bun run rvs render <project-id>`, and
-  `bun run rvs serve`.
+  `bun run rvs render <project-id>`, and `bun run rvs serve`.
 - Run static validation with `bun run check`.
 - Run tests with `bun run test`.
 - Apply repository formatting with `bun run fix`.
@@ -21,8 +20,7 @@ shorts from project directories.
 ## Project Contract
 
 - Authored render inputs live under `projects/<project-id>/`.
-- A project contains `background.mp4`, `caption-blocks.json`, and
-  `captions.srt`.
+- A project contains `background.mp4` and `caption-blocks.json`.
 - `caption-blocks.json` uses `format: "caption_blocks/v1"` and
   `file_name`/`text` narration blocks.
 - Generated narration MP3 files live under `projects/<project-id>/audio/` and

@@ -5,7 +5,6 @@ import { ProjectContractError } from '../errors';
 const audioDirectoryName = 'audio';
 const backgroundFileName = 'background.mp4';
 const captionBlocksFileName = 'caption-blocks.json';
-const captionsFileName = 'captions.srt';
 const projectsDirectoryName = 'projects';
 const safeProjectIdPattern = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 
@@ -14,10 +13,11 @@ export interface LoadProjectRequest {
   rootDirectory: string;
 }
 
-export interface ProjectFiles {
+export interface RenderProjectFiles {
+  audioDirectory: string;
   backgroundAssetPath: string;
   backgroundPath: string;
-  captionsPath: string;
+  captionBlocksPath: string;
   directory: string;
   id: string;
 }
@@ -25,44 +25,8 @@ export interface ProjectFiles {
 export interface CaptionBlocksProjectFiles {
   audioDirectory: string;
   captionBlocksPath: string;
-  captionsPath: string;
   directory: string;
   id: string;
-}
-
-export async function loadProject(
-  request: LoadProjectRequest,
-): Promise<ProjectFiles> {
-  const project = await loadProjectDirectory(request);
-
-  const backgroundPath = path.join(project.directory, backgroundFileName);
-  const captionsPath = path.join(project.directory, captionsFileName);
-
-  const backgroundRealPath = await requireFile(
-    backgroundPath,
-    `projects/${project.id}/${backgroundFileName}`,
-  );
-  const captionsRealPath = await requireFile(
-    captionsPath,
-    `projects/${project.id}/${captionsFileName}`,
-  );
-
-  rejectEscapedProjectDirectory({
-    directory: backgroundRealPath,
-    projectsDirectory: project.directory,
-  });
-  rejectEscapedProjectDirectory({
-    directory: captionsRealPath,
-    projectsDirectory: project.directory,
-  });
-
-  return {
-    backgroundAssetPath: backgroundFileName,
-    backgroundPath: backgroundRealPath,
-    captionsPath: captionsRealPath,
-    directory: project.directory,
-    id: project.id,
-  };
 }
 
 export async function loadCaptionBlocksProject(
@@ -85,16 +49,52 @@ export async function loadCaptionBlocksProject(
     displayPath: `projects/${project.id}/${audioDirectoryName}`,
     projectDirectory: project.directory,
   });
-  const captionsPath = await resolveWritableChildPath({
-    childPath: path.join(project.directory, captionsFileName),
-    displayPath: `projects/${project.id}/${captionsFileName}`,
+
+  return {
+    audioDirectory,
+    captionBlocksPath: captionBlocksRealPath,
+    directory: project.directory,
+    id: project.id,
+  };
+}
+
+export async function loadRenderProject(
+  request: LoadProjectRequest,
+): Promise<RenderProjectFiles> {
+  const project = await loadProjectDirectory(request);
+
+  const backgroundPath = path.join(project.directory, backgroundFileName);
+  const captionBlocksPath = path.join(project.directory, captionBlocksFileName);
+
+  const backgroundRealPath = await requireFile(
+    backgroundPath,
+    `projects/${project.id}/${backgroundFileName}`,
+  );
+  const captionBlocksRealPath = await requireFile(
+    captionBlocksPath,
+    `projects/${project.id}/${captionBlocksFileName}`,
+  );
+
+  rejectEscapedProjectDirectory({
+    directory: backgroundRealPath,
+    projectsDirectory: project.directory,
+  });
+  rejectEscapedProjectDirectory({
+    directory: captionBlocksRealPath,
+    projectsDirectory: project.directory,
+  });
+
+  const audioDirectory = await resolveWritableChildPath({
+    childPath: path.join(project.directory, audioDirectoryName),
+    displayPath: `projects/${project.id}/${audioDirectoryName}`,
     projectDirectory: project.directory,
   });
 
   return {
     audioDirectory,
+    backgroundAssetPath: backgroundFileName,
+    backgroundPath: backgroundRealPath,
     captionBlocksPath: captionBlocksRealPath,
-    captionsPath,
     directory: project.directory,
     id: project.id,
   };

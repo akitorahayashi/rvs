@@ -1,11 +1,11 @@
-import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { readVideoMetadata } from '../media/video';
-import { loadProject } from '../projects/load';
+import { readProjectNarrationCues } from '../narration/project-timeline';
+import { toFrameNarrationCues } from '../narration/timeline';
+import { loadRenderProject } from '../projects/load';
 import { createOutputPath } from '../projects/paths';
 import { createRenderProps } from '../remotion/props';
 import { renderShortVideo } from '../remotion/render';
-import { parseSrt } from '../subtitles/srt';
 import { assertCuesFitVideo, toFrameCues } from '../subtitles/timing';
 
 export interface RenderProjectRequest {
@@ -24,15 +24,20 @@ export async function renderProject(
   request: RenderProjectRequest,
 ): Promise<RenderProjectResult> {
   const rootDirectory = path.resolve(request.rootDirectory ?? process.cwd());
-  const project = await loadProject({
+  const project = await loadRenderProject({
     project: request.project,
     rootDirectory,
   });
   const metadata = await readVideoMetadata(project.backgroundPath);
-  const srt = await readFile(project.captionsPath, 'utf8');
-  const subtitleCues = parseSrt(srt);
+  const narrationCues = await readProjectNarrationCues({
+    project,
+  });
   const captionCues = toFrameCues({
-    cues: subtitleCues,
+    cues: narrationCues,
+    fps: metadata.fps,
+  });
+  const narrationFrameCues = toFrameNarrationCues({
+    cues: narrationCues,
     fps: metadata.fps,
   });
 
@@ -52,6 +57,7 @@ export async function renderProject(
     durationInFrames: metadata.durationInFrames,
     fps: metadata.fps,
     height: metadata.height,
+    narration: narrationFrameCues,
     width: metadata.width,
   });
 
