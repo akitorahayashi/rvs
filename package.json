@@ -1,18 +1,12 @@
 {
-  "name": "bun-cli",
+  "name": "rvs",
   "version": "0.1.0",
-  "description": "Bun and TypeScript CLI template",
+  "description": "Remotion vertical shorts renderer",
   "packageManager": "bun@1.3.14",
-  "module": "src/bun_cli/main.ts",
   "type": "module",
   "private": true,
-  "bin": {
-    "bun-cli": "./src/bun_cli/main.ts"
-  },
   "scripts": {
-    "bun-cli": "bun src/bun_cli/main.ts",
-    "prebuild": "mkdir -p dist",
-    "build": "bun build src/bun_cli/main.ts --compile --outfile dist/bun-cli && rm -f .*.bun-build",
+    "rvs": "bun src/rvs/main.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
     "check": "biome check . && bun run typecheck",
@@ -20,11 +14,19 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "cac": "6.7.14"
+    "@remotion/bundler": "4.0.454",
+    "@remotion/media-parser": "4.0.454",
+    "@remotion/renderer": "4.0.454",
+    "cac": "6.7.14",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "remotion": "4.0.454"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.15",
     "@types/bun": "1.3.14",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
     "husky": "9.1.7",
     "typescript": "6.0.3"
   }

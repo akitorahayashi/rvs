@@ -2,14 +2,18 @@
 
 ## Scope
 
-`bun-cli` is a Bun and TypeScript template repository for CLI projects.
+`rvs` is a Bun and TypeScript CLI for rendering Remotion vertical shorts from
+project directories.
 
 The repository owns:
 
-- the CLI entrypoint in `src/bun_cli/main.ts`
-- the CLI boundary in `src/bun_cli/cli/`
-- the application layer in `src/bun_cli/app/`
-- the feature owner in `src/bun_cli/greetings/`
+- the CLI entrypoint in `src/rvs/main.ts`
+- the CLI boundary in `src/rvs/cli/`
+- the application layer in `src/rvs/app/`
+- the project contract in `src/rvs/projects/`
+- the subtitle contract in `src/rvs/subtitles/`
+- the Remotion composition in `src/rvs/composition/`
+- direct Remotion rendering in `src/rvs/remotion/`
 - the repository-owned tests in `tests/`
 - the validation surface in `package.json`
 - the GitHub Actions automation in `.github/workflows/`
@@ -20,15 +24,12 @@ The repository owns:
 
 The repository-owned tasks are:
 
-- `bun run bun-cli greet <name>`
-- `bun run build`
+- `bun run rvs render <project-id>`
 - `bun run fix`
 - `bun run check`
 - `bun run test`
 
 `bun run fix` applies Biome formatting and safe lint fixes.
-`bun run build` compiles a standalone executable with `bun build --compile`
-without leaving intermediate files in the repository root.
 `bun run check` runs Biome validation and TypeScript typechecking.
 `bun run test` runs the Bun test suite.
 

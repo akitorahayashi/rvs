@@ -23,10 +23,6 @@ jobs:
     name: Static Checks
     uses: ./.github/workflows/run-static-checks.yml
 
-  build:
-    name: Build
-    uses: ./.github/workflows/run-build.yml
-
   test:
     name: Test
     uses: ./.github/workflows/run-tests.yml
