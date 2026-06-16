@@ -4,6 +4,7 @@ node_modules
 # output
 output/*
 !output/.gitkeep
+projects/*/audio/
 
 # code coverage
 coverage
