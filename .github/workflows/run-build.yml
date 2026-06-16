@@ -14,7 +14,7 @@ on:
 jobs:
   build:
     name: Build
-    if: inputs.release_id == ''
+    if: "!startsWith(github.ref, 'refs/tags/')"
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -31,9 +31,6 @@ jobs:
 
   build-release:
     name: Build ${{ matrix.target }}
-    if: inputs.release_id != ''
-    permissions:
-      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -60,6 +57,7 @@ jobs:
         run: bun build src/bun_cli/main.ts --compile --target=${{ matrix.target }} --outfile=${{ matrix.artifact }}
 
       - name: Upload Release Asset
+        if: inputs.release_id != ''
         uses: akitorahayashi/gh-release@v1
         with:
           mode: upload
