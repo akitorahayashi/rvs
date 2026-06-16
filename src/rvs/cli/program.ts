@@ -2,6 +2,7 @@ import { type CAC, cac } from 'cac';
 import packageMetadata from '../../../package.json';
 import { CommandLineError } from '../errors';
 import { registerRenderCommand } from './render';
+import { registerServeCommand } from './serve';
 import { registerSrtCommand } from './srt';
 import { registerTtsCommand } from './tts';
 
@@ -53,6 +54,7 @@ function createProgram(): CAC {
   const program = cac(packageMetadata.name);
 
   program.usage('<command> [options]');
+  registerServeCommand(program);
   registerTtsCommand(program);
   registerSrtCommand(program);
   registerRenderCommand(program);

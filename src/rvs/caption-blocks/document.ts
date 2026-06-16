@@ -24,24 +24,29 @@ export function parseCaptionBlockDocument(document: unknown): CaptionBlock[] {
 
   const fileNames = new Set<string>();
 
-  return document.blocks
-    .map((block, index) => {
-      if (!isObject(block)) {
-        throw invalidBlock(index + 1, 'block must be an object');
-      }
+  return document.blocks.map((block, index) => {
+    if (!isObject(block)) {
+      throw invalidBlock(index + 1, 'block must be an object');
+    }
 
-      const fileName = readFileName(block.file_name, index + 1);
-      if (fileNames.has(fileName)) {
-        throw invalidBlock(index + 1, `file_name '${fileName}' is not unique`);
-      }
-      fileNames.add(fileName);
+    const fileName = readFileName(block.file_name, index + 1);
+    if (readFileNumber(fileName) !== index + 1) {
+      throw invalidBlock(
+        index + 1,
+        'file_name number must match the block position',
+      );
+    }
 
-      return {
-        fileName,
-        text: readText(block.text, index + 1),
-      };
-    })
-    .sort((a, b) => a.fileName.localeCompare(b.fileName));
+    if (fileNames.has(fileName)) {
+      throw invalidBlock(index + 1, `file_name '${fileName}' is not unique`);
+    }
+    fileNames.add(fileName);
+
+    return {
+      fileName,
+      text: readText(block.text, index + 1),
+    };
+  });
 }
 
 function readFileName(value: unknown, blockNumber: number): string {
@@ -62,6 +67,10 @@ function readFileName(value: unknown, blockNumber: number): string {
   }
 
   return fileName;
+}
+
+function readFileNumber(fileName: string): number {
+  return Number.parseInt(fileName, 10);
 }
 
 function readText(value: unknown, blockNumber: number): string {

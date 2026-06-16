@@ -10,8 +10,10 @@ shorts from project directories.
 - Use Bun commands only.
 - Keep the package as ESM with `type: "module"` in `package.json`.
 - Install dependencies with `bun install`.
+- Start the local VOICEVOX engine with `bun run serve` or `bun run s`.
 - Run the CLI with `bun run rvs tts <project-id>`,
-  `bun run rvs srt <project-id>`, and `bun run rvs render <project-id>`.
+  `bun run rvs srt <project-id>`, `bun run rvs render <project-id>`, and
+  `bun run rvs serve`.
 - Run static validation with `bun run check`.
 - Run tests with `bun run test`.
 - Apply repository formatting with `bun run fix`.
@@ -41,6 +43,8 @@ shorts from project directories.
   explicitly needed.
 - Keep VOICEVOX engine access explicit through `RVS_VOICEVOX_ENGINE_URL` or the
   default local engine URL.
+- Keep the local VOICEVOX engine startup on the Docker image
+  `voicevox/voicevox_engine:cpu-ubuntu22.04-0.25.0`.
 - Use direct Remotion APIs instead of shelling out to the Remotion CLI.
 - Keep Remotion root source static and pass render props in memory.
 - Do not add silent fallback behavior.

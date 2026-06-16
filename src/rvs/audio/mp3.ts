@@ -36,7 +36,7 @@ async function runFfmpeg(args: string[]): Promise<void> {
   try {
     process = Bun.spawn(['ffmpeg', ...args], {
       stderr: 'pipe',
-      stdout: 'pipe',
+      stdout: 'ignore',
     });
   } catch (error: unknown) {
     if (isMissingExecutable(error)) {

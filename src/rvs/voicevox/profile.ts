@@ -11,8 +11,8 @@ export interface VoicevoxProfile {
 export const narrationProfile: VoicevoxProfile = {
   intonationScale: 1.0,
   pitchScale: 0.0,
-  postPhonemeLength: 0.1,
-  prePhonemeLength: 0.1,
+  postPhonemeLength: 0.0,
+  prePhonemeLength: 0.0,
   speakerId: 2,
   speedScale: 1.15,
   volumeScale: 1.0,

@@ -7,11 +7,11 @@ describe('parseCaptionBlockDocument', () => {
       parseCaptionBlockDocument({
         blocks: [
           {
-            file_name: ' 02_demo.mp3 ',
+            file_name: ' 01_demo.mp3 ',
             text: ' 丸呑みされる！？ ',
           },
           {
-            file_name: '01_intro.mp3',
+            file_name: '02_intro.mp3',
             text: 'でも実はこれ',
           },
         ],
@@ -19,14 +19,32 @@ describe('parseCaptionBlockDocument', () => {
       }),
     ).toEqual([
       {
-        fileName: '01_intro.mp3',
-        text: 'でも実はこれ',
-      },
-      {
-        fileName: '02_demo.mp3',
+        fileName: '01_demo.mp3',
         text: '丸呑みされる！？',
       },
+      {
+        fileName: '02_intro.mp3',
+        text: 'でも実はこれ',
+      },
     ]);
+  });
+
+  test('rejects file names whose numbers do not match block positions', () => {
+    expect(() =>
+      parseCaptionBlockDocument({
+        blocks: [
+          {
+            file_name: '01_first.mp3',
+            text: 'first',
+          },
+          {
+            file_name: '03_third.mp3',
+            text: 'third',
+          },
+        ],
+        format: 'caption_blocks/v1',
+      }),
+    ).toThrow('file_name number must match the block position');
   });
 
   test('rejects text longer than 15 characters', () => {

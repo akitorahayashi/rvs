@@ -11,3 +11,5 @@ export class SubtitleContractError extends AppError {}
 export class MediaContractError extends AppError {}
 
 export class OutputContractError extends AppError {}
+
+export class RuntimeContractError extends AppError {}

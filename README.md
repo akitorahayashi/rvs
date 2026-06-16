@@ -39,6 +39,7 @@ scripts into `caption-blocks.json`.
 ## Usage
 
 ```bash
+bun run serve
 bun run rvs tts whale
 bun run rvs srt whale
 bun run rvs render whale
@@ -46,6 +47,8 @@ bun run rvs render whale
 
 `tts` requires a running VOICEVOX engine at `http://127.0.0.1:50021` by default
 and `ffmpeg` on `PATH`. `RVS_VOICEVOX_ENGINE_URL` overrides the engine URL.
+`bun run serve` starts the local VOICEVOX engine container. `bun run s` is the
+short alias.
 
 Successful renders produce timestamped final artifacts:
 
@@ -61,6 +64,8 @@ artifact directory convention present in the repository.
 ## Task Surface
 
 ```bash
+bun run serve
+bun run s
 bun run rvs tts whale
 bun run rvs srt whale
 bun run rvs render whale

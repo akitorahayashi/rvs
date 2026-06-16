@@ -1,10 +1,29 @@
 import { MediaContractError } from '../errors';
+import { defaultVoicevoxUrl } from './engine';
 import type { VoicevoxProfile } from './profile';
 
-const defaultEngineUrl = 'http://127.0.0.1:50021';
-
 export function voicevoxUrl(): string {
-  return process.env.RVS_VOICEVOX_ENGINE_URL ?? defaultEngineUrl;
+  const configuredUrl = process.env.RVS_VOICEVOX_ENGINE_URL;
+  if (configuredUrl === undefined) {
+    return defaultVoicevoxUrl();
+  }
+
+  const url = configuredUrl.trim();
+  if (url === '') {
+    throw new MediaContractError(
+      'RVS_VOICEVOX_ENGINE_URL must be a non-empty URL.',
+    );
+  }
+
+  try {
+    new URL(url);
+  } catch {
+    throw new MediaContractError(
+      'RVS_VOICEVOX_ENGINE_URL must be a valid URL.',
+    );
+  }
+
+  return url;
 }
 
 export async function synthesizeWav(
@@ -32,11 +51,9 @@ export async function synthesizeWav(
   const synthesisUrl = new URL(`${normalizedEngineUrl}/synthesis`);
   synthesisUrl.searchParams.set('speaker', profile.speakerId.toString());
 
-  const response = await fetch(synthesisUrl, {
+  const response = await fetchVoicevox(synthesisUrl, {
     body: JSON.stringify(synthesisPayload),
-    headers: { 'Content-Type': 'application/json' },
-    method: 'POST',
-    signal: AbortSignal.timeout(30_000),
+    context: 'synthesis',
   });
 
   if (!response.ok) {
@@ -60,11 +77,9 @@ async function requestAudioQuery(request: {
     request.profile.speakerId.toString(),
   );
 
-  const response = await fetch(audioQueryUrl, {
+  const response = await fetchVoicevox(audioQueryUrl, {
     body: '{}',
-    headers: { 'Content-Type': 'application/json' },
-    method: 'POST',
-    signal: AbortSignal.timeout(30_000),
+    context: 'audio_query',
   });
 
   if (!response.ok) {
@@ -85,4 +100,23 @@ async function requestAudioQuery(request: {
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+async function fetchVoicevox(
+  url: URL,
+  request: { body: string; context: string },
+): Promise<Response> {
+  try {
+    return await fetch(url, {
+      body: request.body,
+      headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
+      signal: AbortSignal.timeout(30_000),
+    });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new MediaContractError(
+      `VOICEVOX ${request.context} request failed: ${message}`,
+    );
+  }
 }

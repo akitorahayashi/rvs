@@ -1,4 +1,4 @@
-import { realpath, stat } from 'node:fs/promises';
+import { lstat, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { ProjectContractError } from '../errors';
 
@@ -80,10 +80,21 @@ export async function loadCaptionBlocksProject(
     projectsDirectory: project.directory,
   });
 
+  const audioDirectory = await resolveWritableChildPath({
+    childPath: path.join(project.directory, audioDirectoryName),
+    displayPath: `projects/${project.id}/${audioDirectoryName}`,
+    projectDirectory: project.directory,
+  });
+  const captionsPath = await resolveWritableChildPath({
+    childPath: path.join(project.directory, captionsFileName),
+    displayPath: `projects/${project.id}/${captionsFileName}`,
+    projectDirectory: project.directory,
+  });
+
   return {
-    audioDirectory: path.join(project.directory, audioDirectoryName),
+    audioDirectory,
     captionBlocksPath: captionBlocksRealPath,
-    captionsPath: path.join(project.directory, captionsFileName),
+    captionsPath,
     directory: project.directory,
     id: project.id,
   };
@@ -216,4 +227,49 @@ async function requireFile(
 
     throw new ProjectContractError(`${displayPath} is required.`);
   }
+}
+
+async function resolveWritableChildPath(request: {
+  childPath: string;
+  displayPath: string;
+  projectDirectory: string;
+}): Promise<string> {
+  const resolvedPath = path.resolve(request.childPath);
+  rejectEscapedProjectDirectory({
+    directory: resolvedPath,
+    projectsDirectory: request.projectDirectory,
+  });
+
+  try {
+    const stats = await lstat(resolvedPath);
+    if (stats.isSymbolicLink()) {
+      throw new ProjectContractError(
+        `${request.displayPath} must not be a symlink.`,
+      );
+    }
+
+    const realPath = await realpath(resolvedPath);
+    rejectEscapedProjectDirectory({
+      directory: realPath,
+      projectsDirectory: request.projectDirectory,
+    });
+  } catch (error: unknown) {
+    if (error instanceof ProjectContractError) {
+      throw error;
+    }
+    if (!isMissingPathError(error)) {
+      throw error;
+    }
+  }
+
+  return resolvedPath;
+}
+
+function isMissingPathError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === 'ENOENT'
+  );
 }

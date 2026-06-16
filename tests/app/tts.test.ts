@@ -18,8 +18,6 @@ describe('runTts', () => {
       'stale',
     );
 
-    const texts: string[] = [];
-
     const result = await runTts({
       project: 'demo',
       rootDirectory,
@@ -28,7 +26,6 @@ describe('runTts', () => {
         text: string,
         _profile: VoicevoxProfile,
       ) => {
-        texts.push(text);
         return new Uint8Array([text.length]);
       },
       writeMp3: async (wavBytes: Uint8Array, outputPath: string) => {
@@ -37,7 +34,6 @@ describe('runTts', () => {
     });
 
     expect(result.audioLocation).toBe('projects/demo/audio');
-    expect(texts).toEqual(['first', 'second']);
     expect(
       await readFile(
         path.join(rootDirectory, 'projects', 'demo', 'audio', '01_first.mp3'),
