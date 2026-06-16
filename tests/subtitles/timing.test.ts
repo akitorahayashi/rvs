@@ -43,4 +43,26 @@ describe('subtitle timing', () => {
       }),
     ).toThrow('ends after the background video duration');
   });
+
+  test('rejects cues that overlap after frame conversion', () => {
+    expect(() =>
+      toFrameCues({
+        cues: [
+          {
+            endMs: 10,
+            id: '1',
+            startMs: 0,
+            text: 'first',
+          },
+          {
+            endMs: 20,
+            id: '2',
+            startMs: 11,
+            text: 'second',
+          },
+        ],
+        fps: 30,
+      }),
+    ).toThrow('overlaps after frame conversion');
+  });
 });

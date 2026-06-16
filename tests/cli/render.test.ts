@@ -14,8 +14,12 @@ function runCli(args: string[]): CommandResult {
     stdout: 'pipe',
   });
 
+  if (command.exitCode === null) {
+    throw new Error('CLI process did not exit normally.');
+  }
+
   return {
-    exitCode: command.exitCode ?? 1,
+    exitCode: command.exitCode,
     stderr: command.stderr.toString().trim(),
     stdout: command.stdout.toString().trim(),
   };

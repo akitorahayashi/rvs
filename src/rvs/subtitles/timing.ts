@@ -18,17 +18,31 @@ export function toFrameCues(request: ToFrameCuesRequest): CaptionCue[] {
     );
   }
 
-  return request.cues.map((cue) => {
+  const captionCues: CaptionCue[] = [];
+  let nextAvailableFrame = 0;
+
+  for (const cue of request.cues) {
     const startFrame = Math.round((cue.startMs / 1000) * request.fps);
     const endFrame = Math.round((cue.endMs / 1000) * request.fps);
+    const durationInFrames = Math.max(1, endFrame - startFrame);
 
-    return {
-      durationInFrames: Math.max(1, endFrame - startFrame),
+    if (startFrame < nextAvailableFrame) {
+      throw new SubtitleContractError(
+        `SRT cue ${cue.id} overlaps after frame conversion at ${request.fps} FPS.`,
+      );
+    }
+
+    captionCues.push({
+      durationInFrames,
       id: cue.id,
       startFrame,
       text: cue.text,
-    };
-  });
+    });
+
+    nextAvailableFrame = startFrame + durationInFrames;
+  }
+
+  return captionCues;
 }
 
 export function assertCuesFitVideo(request: AssertCuesFitVideoRequest): void {

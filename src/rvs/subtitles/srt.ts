@@ -14,14 +14,15 @@ export function parseSrt(input: string): SubtitleCue[] {
     );
   }
 
-  const cues = trimmedInput.split(/\n{2,}/).map(parseBlock);
+  const cues = trimmedInput.split(/\n\s*\n+/).map(parseBlock);
+  rejectDuplicateIds(cues);
   rejectUnstableTiming(cues);
 
   return cues;
 }
 
 function parseBlock(block: string, blockIndex: number): SubtitleCue {
-  const lines = block.split('\n');
+  const lines = block.trim().split('\n');
   const indexLine = lines.shift()?.trim();
 
   if (!indexLine || !/^\d+$/.test(indexLine)) {
@@ -68,6 +69,18 @@ function parseBlock(block: string, blockIndex: number): SubtitleCue {
     startMs,
     text,
   };
+}
+
+function rejectDuplicateIds(cues: readonly SubtitleCue[]): void {
+  const ids = new Set<string>();
+
+  for (const cue of cues) {
+    if (ids.has(cue.id)) {
+      throw new SubtitleContractError(`SRT cue index ${cue.id} is not unique.`);
+    }
+
+    ids.add(cue.id);
+  }
 }
 
 function parseTimestamp(timestamp: string, cueNumber: number): number {

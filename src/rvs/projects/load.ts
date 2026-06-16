@@ -1,4 +1,4 @@
-import { stat } from 'node:fs/promises';
+import { realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { ProjectContractError } from '../errors';
 
@@ -29,19 +29,43 @@ export async function loadProject(
   const projectsDirectory = path.join(rootDirectory, projectsDirectoryName);
 
   rejectEscapedProjectDirectory({ directory, projectsDirectory });
-  await requireDirectory(directory, `projects/${id}`);
+  const projectsRealPath = await requireDirectory(
+    projectsDirectory,
+    projectsDirectoryName,
+  );
+  const directoryRealPath = await requireDirectory(directory, `projects/${id}`);
 
-  const backgroundPath = path.join(directory, backgroundFileName);
-  const captionsPath = path.join(directory, captionsFileName);
+  rejectEscapedProjectDirectory({
+    directory: directoryRealPath,
+    projectsDirectory: projectsRealPath,
+  });
 
-  await requireFile(backgroundPath, `projects/${id}/${backgroundFileName}`);
-  await requireFile(captionsPath, `projects/${id}/${captionsFileName}`);
+  const backgroundPath = path.join(directoryRealPath, backgroundFileName);
+  const captionsPath = path.join(directoryRealPath, captionsFileName);
+
+  const backgroundRealPath = await requireFile(
+    backgroundPath,
+    `projects/${id}/${backgroundFileName}`,
+  );
+  const captionsRealPath = await requireFile(
+    captionsPath,
+    `projects/${id}/${captionsFileName}`,
+  );
+
+  rejectEscapedProjectDirectory({
+    directory: backgroundRealPath,
+    projectsDirectory: directoryRealPath,
+  });
+  rejectEscapedProjectDirectory({
+    directory: captionsRealPath,
+    projectsDirectory: directoryRealPath,
+  });
 
   return {
     backgroundAssetPath: backgroundFileName,
-    backgroundPath,
-    captionsPath,
-    directory,
+    backgroundPath: backgroundRealPath,
+    captionsPath: captionsRealPath,
+    directory: directoryRealPath,
     id,
   };
 }
@@ -57,7 +81,8 @@ function resolveProjectId(projectReference: string): string {
     );
   }
 
-  const segments = projectReference.split(/[\\/]/);
+  const cleanedReference = projectReference.replace(/[\\/]+$/, '');
+  const segments = cleanedReference.split(/[\\/]/);
 
   if (
     segments.some(
@@ -107,13 +132,16 @@ function rejectEscapedProjectDirectory(request: {
 async function requireDirectory(
   directory: string,
   displayPath: string,
-): Promise<void> {
+): Promise<string> {
   try {
-    const stats = await stat(directory);
+    const realDirectory = await realpath(directory);
+    const stats = await stat(realDirectory);
 
     if (!stats.isDirectory()) {
       throw new ProjectContractError(`${displayPath} must be a directory.`);
     }
+
+    return realDirectory;
   } catch (error: unknown) {
     if (error instanceof ProjectContractError) {
       throw error;
@@ -126,13 +154,16 @@ async function requireDirectory(
 async function requireFile(
   filePath: string,
   displayPath: string,
-): Promise<void> {
+): Promise<string> {
   try {
-    const stats = await stat(filePath);
+    const realFilePath = await realpath(filePath);
+    const stats = await stat(realFilePath);
 
     if (!stats.isFile()) {
       throw new ProjectContractError(`${displayPath} must be a file.`);
     }
+
+    return realFilePath;
   } catch (error: unknown) {
     if (error instanceof ProjectContractError) {
       throw error;

@@ -60,7 +60,20 @@ async function pathExists(filePath: string): Promise<boolean> {
   try {
     await stat(filePath);
     return true;
-  } catch {
-    return false;
+  } catch (error: unknown) {
+    if (isMissingPathError(error)) {
+      return false;
+    }
+
+    throw error;
   }
+}
+
+function isMissingPathError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === 'ENOENT'
+  );
 }

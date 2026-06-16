@@ -13,19 +13,21 @@ export interface VideoMetadata {
 export async function readVideoMetadata(
   videoPath: string,
 ): Promise<VideoMetadata> {
-  const result = await parseMedia({
-    acknowledgeRemotionLicense: true,
-    fields: {
-      dimensions: true,
-      slowDurationInSeconds: true,
-      slowFps: true,
-    },
-    reader: nodeReader,
-    src: videoPath,
-  });
+  const result = await parseVideoMetadata(videoPath);
 
   if (!result.dimensions) {
     throw new MediaContractError('background.mp4 must contain a video track.');
+  }
+
+  if (
+    !Number.isFinite(result.dimensions.width) ||
+    result.dimensions.width <= 0 ||
+    !Number.isFinite(result.dimensions.height) ||
+    result.dimensions.height <= 0
+  ) {
+    throw new MediaContractError(
+      'background.mp4 must have positive dimensions.',
+    );
   }
 
   if (
@@ -48,4 +50,25 @@ export async function readVideoMetadata(
     height: result.dimensions.height,
     width: result.dimensions.width,
   };
+}
+
+async function parseVideoMetadata(videoPath: string) {
+  try {
+    return await parseMedia({
+      acknowledgeRemotionLicense: true,
+      fields: {
+        dimensions: true,
+        slowDurationInSeconds: true,
+        slowFps: true,
+      },
+      reader: nodeReader,
+      src: videoPath,
+    });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+
+    throw new MediaContractError(
+      `Failed to parse video metadata for background.mp4: ${message}`,
+    );
+  }
 }
