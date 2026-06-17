@@ -33,6 +33,8 @@ export function narrationProgress(
     stream.write(`${line(completed, total)}\n`);
   }
 
+  render();
+
   return {
     advance() {
       completed += 1;
@@ -48,7 +50,7 @@ export function narrationProgress(
 
 function line(completed: number, total: number): string {
   const ratio = total === 0 ? 1 : completed / total;
-  const filled = Math.round(ratio * barWidth);
+  const filled = Math.max(0, Math.min(Math.round(ratio * barWidth), barWidth));
   const bar = `${'█'.repeat(filled)}${'░'.repeat(barWidth - filled)}`;
   return `narration [${bar}] ${completed}/${total}`;
 }

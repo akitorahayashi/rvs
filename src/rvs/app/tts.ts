@@ -40,8 +40,9 @@ export async function runTts(request: RunTtsRequest): Promise<RunTtsResult> {
   const progress = createNarrationProgress(blocks.length);
 
   let nextIndex = 0;
+  let failed = false;
   async function worker(): Promise<void> {
-    while (nextIndex < blocks.length) {
+    while (nextIndex < blocks.length && !failed) {
       const index = nextIndex;
       nextIndex += 1;
       const block = blocks[index];
@@ -49,19 +50,28 @@ export async function runTts(request: RunTtsRequest): Promise<RunTtsResult> {
         continue;
       }
       const outputPath = path.join(project.audioDirectory, block.fileName);
-      const wavBytes = await synthesize(
-        engineUrl,
-        block.text,
-        narrationProfile,
-      );
-      await writeMp3(wavBytes, outputPath);
-      audioPaths[index] = outputPath;
-      progress.advance();
+      try {
+        const wavBytes = await synthesize(
+          engineUrl,
+          block.text,
+          narrationProfile,
+        );
+        await writeMp3(wavBytes, outputPath);
+        audioPaths[index] = outputPath;
+        progress.advance();
+      } catch (error: unknown) {
+        failed = true;
+        throw error;
+      }
     }
   }
 
   const workerCount = Math.min(synthesisConcurrency, blocks.length);
-  await Promise.all(Array.from({ length: workerCount }, () => worker()));
+  try {
+    await Promise.all(Array.from({ length: workerCount }, () => worker()));
+  } finally {
+    progress.finish();
+  }
   progress.finish();
 
   return {
