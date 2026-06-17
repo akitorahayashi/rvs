@@ -20,8 +20,9 @@ export function scheduleNarrationCues(
       );
     }
 
-    const startMs = cursorMs;
-    const endMs = startMs + Math.ceil(block.durationMs);
+    const startMs = Math.round(cursorMs);
+    const nextCursorMs = cursorMs + block.durationMs;
+    const endMs = Math.round(nextCursorMs);
 
     cues.push({
       audioFile: block.audioFile,
@@ -31,7 +32,7 @@ export function scheduleNarrationCues(
       text: block.text,
     });
 
-    cursorMs = endMs;
+    cursorMs = nextCursorMs;
   }
 
   return cues;

@@ -28,26 +28,38 @@ describe('scheduleNarrationCues', () => {
     expect(cues).toEqual([
       {
         audioFile: 'audio/01_first.mp3',
-        endMs: 1201,
+        endMs: 1200,
         id: '1',
         startMs: 0,
         text: 'first',
       },
       {
         audioFile: 'audio/02_second.mp3',
-        endMs: 2001,
+        endMs: 2000,
         id: '2',
-        startMs: 1201,
+        startMs: 1200,
         text: 'second',
       },
       {
         audioFile: 'audio/03_third.mp3',
-        endMs: 2501,
+        endMs: 2500,
         id: '3',
-        startMs: 2001,
+        startMs: 2000,
         text: 'third',
       },
     ]);
+  });
+
+  test('keeps a precise cursor so rounding does not accumulate drift', () => {
+    const cues = scheduleNarrationCues(
+      Array.from({ length: 100 }, (_, index) => ({
+        audioFile: `audio/${index}.mp3`,
+        durationMs: 1200.2,
+        text: String(index),
+      })),
+    );
+
+    expect(cues[cues.length - 1]?.endMs).toBe(120_020);
   });
 });
 
