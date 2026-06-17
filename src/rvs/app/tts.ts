@@ -1,6 +1,7 @@
 import { lstat, mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { writeMp3 as writeMp3File } from '../audio/mp3';
+import { createNarrationProgress } from '../audio/progress';
 import { readCaptionBlocks } from '../caption-blocks/read';
 import { OutputContractError } from '../errors';
 import { loadCaptionBlocksProject } from '../projects/load';
@@ -20,6 +21,8 @@ export interface RunTtsResult {
   projectId: string;
 }
 
+const synthesisConcurrency = 4;
+
 export async function runTts(request: RunTtsRequest): Promise<RunTtsResult> {
   const rootDirectory = path.resolve(request.rootDirectory ?? process.cwd());
   const project = await loadCaptionBlocksProject({
@@ -33,15 +36,33 @@ export async function runTts(request: RunTtsRequest): Promise<RunTtsResult> {
   await resetAudioDirectory(project.audioDirectory);
 
   const engineUrl = voicevoxUrl();
-  const audioPaths: string[] = [];
+  const audioPaths = new Array<string>(blocks.length);
+  const progress = createNarrationProgress(blocks.length);
 
-  for (const block of blocks) {
-    const outputPath = path.join(project.audioDirectory, block.fileName);
-    process.stderr.write(`Generating narration: ${outputPath}\n`);
-    const wavBytes = await synthesize(engineUrl, block.text, narrationProfile);
-    await writeMp3(wavBytes, outputPath);
-    audioPaths.push(outputPath);
+  let nextIndex = 0;
+  async function worker(): Promise<void> {
+    while (nextIndex < blocks.length) {
+      const index = nextIndex;
+      nextIndex += 1;
+      const block = blocks[index];
+      if (block === undefined) {
+        continue;
+      }
+      const outputPath = path.join(project.audioDirectory, block.fileName);
+      const wavBytes = await synthesize(
+        engineUrl,
+        block.text,
+        narrationProfile,
+      );
+      await writeMp3(wavBytes, outputPath);
+      audioPaths[index] = outputPath;
+      progress.advance();
+    }
   }
+
+  const workerCount = Math.min(synthesisConcurrency, blocks.length);
+  await Promise.all(Array.from({ length: workerCount }, () => worker()));
+  progress.finish();
 
   return {
     audioLocation: path.relative(rootDirectory, project.audioDirectory),
