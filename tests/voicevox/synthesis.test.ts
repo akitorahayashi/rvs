@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test } from 'bun:test';
 import { MediaContractError } from '../../src/rvs/errors';
+import { defaultVoicevoxUrl } from '../../src/rvs/voicevox/engine';
 import { narrationProfile } from '../../src/rvs/voicevox/profile';
 import { synthesizeWav, voicevoxUrl } from '../../src/rvs/voicevox/synthesis';
 
@@ -21,6 +22,18 @@ describe('voicevoxUrl', () => {
     process.env.RVS_VOICEVOX_ENGINE_URL = ' http://127.0.0.1:50021/ ';
 
     expect(voicevoxUrl()).toBe('http://127.0.0.1:50021/');
+  });
+
+  test('rejects an invalid configured engine URL', () => {
+    process.env.RVS_VOICEVOX_ENGINE_URL = 'not-a-url';
+
+    expect(() => voicevoxUrl()).toThrow(MediaContractError);
+  });
+
+  test('falls back to the default URL when unconfigured', () => {
+    delete process.env.RVS_VOICEVOX_ENGINE_URL;
+
+    expect(voicevoxUrl()).toBe(defaultVoicevoxUrl());
   });
 });
 

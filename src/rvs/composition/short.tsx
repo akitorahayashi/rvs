@@ -1,4 +1,10 @@
-import { AbsoluteFill, OffthreadVideo, Sequence, staticFile } from 'remotion';
+import {
+  AbsoluteFill,
+  Audio,
+  OffthreadVideo,
+  Sequence,
+  staticFile,
+} from 'remotion';
 import type { ShortRenderProps } from '../remotion/props';
 import { Caption } from './caption';
 
@@ -13,6 +19,15 @@ export function Short(props: ShortRenderProps) {
           width: '100%',
         }}
       />
+      {props.narration.map((cue) => (
+        <Sequence
+          durationInFrames={cue.durationInFrames}
+          from={cue.startFrame}
+          key={`audio-${cue.id}`}
+        >
+          <Audio src={staticFile(cue.audioFile)} />
+        </Sequence>
+      ))}
       {props.captions.map((cue) => (
         <Sequence
           durationInFrames={cue.durationInFrames}

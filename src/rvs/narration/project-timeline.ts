@@ -1,71 +1,49 @@
-import { lstat, realpath, stat, writeFile } from 'node:fs/promises';
+import { realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { readAudioDuration } from '../audio/duration';
 import { readCaptionBlocks } from '../caption-blocks/read';
 import { ProjectContractError } from '../errors';
-import { loadCaptionBlocksProject } from '../projects/load';
-import { formatSrt } from '../subtitles/format';
-import { scheduleSubtitleCues } from '../subtitles/schedule';
+import type { NarrationCue } from './cue';
+import { scheduleNarrationCues } from './timeline';
 
-export interface WriteSrtRequest {
+export interface ReadProjectNarrationRequest {
+  project: {
+    audioDirectory: string;
+    captionBlocksPath: string;
+    id: string;
+  };
   readDuration?: typeof readAudioDuration;
-  rootDirectory?: string;
-  project: string;
 }
 
-export interface WriteSrtResult {
-  captionCount: number;
-  captionsLocation: string;
-  captionsPath: string;
-  projectId: string;
-}
-
-export async function writeProjectSrt(
-  request: WriteSrtRequest,
-): Promise<WriteSrtResult> {
-  const rootDirectory = path.resolve(request.rootDirectory ?? process.cwd());
-  const project = await loadCaptionBlocksProject({
-    project: request.project,
-    rootDirectory,
-  });
-  const blocks = await readCaptionBlocks(project.captionBlocksPath);
+export async function readProjectNarrationCues(
+  request: ReadProjectNarrationRequest,
+): Promise<NarrationCue[]> {
+  const blocks = await readCaptionBlocks(request.project.captionBlocksPath);
   const readDuration = request.readDuration ?? readAudioDuration;
   const audioDirectory = await requireAudioDirectory(
-    project.audioDirectory,
-    `projects/${project.id}/audio`,
+    request.project.audioDirectory,
+    `projects/${request.project.id}/audio`,
   );
 
-  const cues = scheduleSubtitleCues(
+  return scheduleNarrationCues(
     await Promise.all(
       blocks.map(async (block) => {
+        const displayPath = `projects/${request.project.id}/audio/${block.fileName}`;
         const audioPath = await requireAudioFile({
           audioDirectory,
-          displayPath: `projects/${project.id}/audio/${block.fileName}`,
+          displayPath,
           fileName: block.fileName,
         });
-        const durationSeconds = await readDuration(
-          audioPath,
-          `projects/${project.id}/audio/${block.fileName}`,
-        );
+        const durationSeconds = await readDuration(audioPath, displayPath);
 
         return {
+          audioFile: toAudioAssetPath(block.fileName),
           durationMs: durationSeconds * 1000,
-          fileName: block.fileName,
           text: block.text,
         };
       }),
     ),
   );
-
-  await assertWritableCaptionsPath(project.captionsPath);
-  await writeFile(project.captionsPath, formatSrt(cues));
-
-  return {
-    captionCount: cues.length,
-    captionsLocation: path.relative(rootDirectory, project.captionsPath),
-    captionsPath: project.captionsPath,
-    projectId: project.id,
-  };
 }
 
 async function requireAudioDirectory(
@@ -121,25 +99,6 @@ async function requireAudioFile(request: {
   }
 }
 
-async function assertWritableCaptionsPath(captionsPath: string): Promise<void> {
-  try {
-    const stats = await lstat(captionsPath);
-    if (stats.isSymbolicLink()) {
-      throw new ProjectContractError('captions.srt must not be a symlink.');
-    }
-    if (!stats.isFile()) {
-      throw new ProjectContractError('captions.srt must be a file.');
-    }
-  } catch (error: unknown) {
-    if (error instanceof ProjectContractError) {
-      throw error;
-    }
-    if (!isMissingPathError(error)) {
-      throw error;
-    }
-  }
-}
-
 function rejectEscapedAudioFile(request: {
   audioDirectory: string;
   audioPath: string;
@@ -153,11 +112,6 @@ function rejectEscapedAudioFile(request: {
   }
 }
 
-function isMissingPathError(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    error.code === 'ENOENT'
-  );
+function toAudioAssetPath(fileName: string): string {
+  return path.posix.join('audio', fileName);
 }
