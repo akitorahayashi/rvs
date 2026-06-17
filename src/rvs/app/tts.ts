@@ -68,11 +68,18 @@ export async function runTts(request: RunTtsRequest): Promise<RunTtsResult> {
 
   const workerCount = Math.min(synthesisConcurrency, blocks.length);
   try {
-    await Promise.all(Array.from({ length: workerCount }, () => worker()));
+    const results = await Promise.allSettled(
+      Array.from({ length: workerCount }, () => worker()),
+    );
+    const failure = results.find(
+      (r): r is PromiseRejectedResult => r.status === 'rejected',
+    );
+    if (failure !== undefined) {
+      throw failure.reason;
+    }
   } finally {
     progress.finish();
   }
-  progress.finish();
 
   return {
     audioLocation: path.relative(rootDirectory, project.audioDirectory),
