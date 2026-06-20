@@ -22,7 +22,7 @@ describe('readProjectNarrationCues', () => {
         blocks: [
           {
             caption: '字幕',
-            file_name: '01_first.mp3',
+            file_name: 'first',
             narration: '読み上げる音声',
           },
         ],

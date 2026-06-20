@@ -8,12 +8,12 @@ describe('parseCaptionBlockDocument', () => {
         blocks: [
           {
             caption: ' 無料のベビーシッター ',
-            file_name: ' 01_muryo_babysitter.mp3 ',
+            file_name: ' muryo_babysitter ',
             narration: ' 「無料のベビーシッター」 ',
           },
           {
             caption: '預けているんだとか',
-            file_name: '02_azukete.mp3',
+            file_name: 'azukete',
             narration: '預けているんだとか。',
           },
         ],
@@ -22,33 +22,33 @@ describe('parseCaptionBlockDocument', () => {
     ).toEqual([
       {
         caption: '無料のベビーシッター',
-        fileName: '01_muryo_babysitter.mp3',
+        fileName: 'muryo_babysitter',
         narration: '「無料のベビーシッター」',
       },
       {
         caption: '預けているんだとか',
-        fileName: '02_azukete.mp3',
+        fileName: 'azukete',
         narration: '預けているんだとか。',
       },
     ]);
   });
 
-  test('rejects file names whose numbers do not match block positions', () => {
+  test('rejects duplicate file names', () => {
     expect(() =>
       parseCaptionBlockDocument({
         blocks: [
           {
             caption: 'first',
-            file_name: '01_first.mp3',
+            file_name: 'same',
           },
           {
-            caption: 'third',
-            file_name: '03_third.mp3',
+            caption: 'second',
+            file_name: 'same',
           },
         ],
         format: 'caption_blocks/v1',
       }),
-    ).toThrow('file_name number must match the block position');
+    ).toThrow("file_name 'same' is not unique");
   });
 
   test('rejects captions longer than 15 characters', () => {
@@ -57,7 +57,7 @@ describe('parseCaptionBlockDocument', () => {
         blocks: [
           {
             caption: '1234567890123456',
-            file_name: '01_demo.mp3',
+            file_name: 'demo',
           },
         ],
         format: 'caption_blocks/v1',
@@ -65,7 +65,7 @@ describe('parseCaptionBlockDocument', () => {
     ).toThrow('15 characters or fewer');
   });
 
-  test('rejects unsafe file names', () => {
+  test('rejects file names with extensions or path separators', () => {
     expect(() =>
       parseCaptionBlockDocument({
         blocks: [
@@ -76,7 +76,32 @@ describe('parseCaptionBlockDocument', () => {
         ],
         format: 'caption_blocks/v1',
       }),
-    ).toThrow('numbered MP3 filename');
+    ).toThrow('lower snake name');
+    expect(() =>
+      parseCaptionBlockDocument({
+        blocks: [
+          {
+            caption: 'hello',
+            file_name: 'demo.mp3',
+          },
+        ],
+        format: 'caption_blocks/v1',
+      }),
+    ).toThrow('lower snake name');
+  });
+
+  test('rejects file names that are not lower snake names', () => {
+    expect(() =>
+      parseCaptionBlockDocument({
+        blocks: [
+          {
+            caption: 'hello',
+            file_name: 'DemoName',
+          },
+        ],
+        format: 'caption_blocks/v1',
+      }),
+    ).toThrow('lower snake name');
   });
 
   test('rejects empty narration when the key is provided', () => {
@@ -85,7 +110,7 @@ describe('parseCaptionBlockDocument', () => {
         blocks: [
           {
             caption: 'hello',
-            file_name: '01_demo.mp3',
+            file_name: 'demo',
             narration: '   ',
           },
         ],
@@ -101,7 +126,7 @@ describe('parseCaptionBlockDocument', () => {
           {
             caption: 'hello',
             extra: true,
-            file_name: '01_demo.mp3',
+            file_name: 'demo',
           },
         ],
         format: 'caption_blocks/v1',
