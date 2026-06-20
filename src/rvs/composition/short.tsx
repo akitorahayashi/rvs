@@ -18,6 +18,7 @@ export function Short(props: ShortRenderProps) {
           objectFit: 'cover',
           width: '100%',
         }}
+        volume={props.backgroundVideoVolume}
       />
       {props.bgm ? (
         <Audio

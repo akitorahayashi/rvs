@@ -8,6 +8,7 @@ import { loadRenderProject } from '../projects/load';
 import { createOutputPath } from '../projects/paths';
 import {
   createRenderProps,
+  defaultBackgroundVideoVolume,
   defaultBgmVolume,
   defaultNarrationVolume,
 } from '../remotion/props';
@@ -65,6 +66,7 @@ export async function renderProject(
   });
   const props = createRenderProps({
     backgroundVideo: project.backgroundAssetPath,
+    backgroundVideoVolume: defaultBackgroundVideoVolume,
     bgm: project.bgmAssetPath,
     bgmVolume: defaultBgmVolume,
     captions: captionCues,

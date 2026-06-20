@@ -13,7 +13,8 @@ const positiveIntegerSchema = z.number().int().positive();
 const nonNegativeIntegerSchema = z.number().int().nonnegative();
 
 export const defaultBgmVolume = 0.55;
-export const defaultNarrationVolume = 1.0;
+export const defaultBackgroundVideoVolume = 0.3;
+export const defaultNarrationVolume = 1.5;
 
 export const captionCueSchema = z
   .object({
@@ -36,6 +37,7 @@ export const narrationFrameCueSchema = z
 export const shortRenderPropsSchema = z
   .object({
     backgroundVideo: requiredStringSchema,
+    backgroundVideoVolume: nonNegativeNumberSchema,
     bgm: requiredStringSchema.optional(),
     bgmVolume: nonNegativeNumberSchema,
     captions: z.array(captionCueSchema),
@@ -52,6 +54,7 @@ export type ShortRenderProps = z.infer<typeof shortRenderPropsSchema>;
 
 export interface CreateRenderPropsRequest {
   backgroundVideo: string;
+  backgroundVideoVolume: number;
   bgm?: string;
   bgmVolume: number;
   captions: CaptionCue[];
@@ -65,6 +68,7 @@ export interface CreateRenderPropsRequest {
 
 export const defaultRenderProps = parseShortRenderProps({
   backgroundVideo: 'background.mp4',
+  backgroundVideoVolume: defaultBackgroundVideoVolume,
   bgm: undefined,
   bgmVolume: defaultBgmVolume,
   captions: [],

@@ -29,8 +29,8 @@ Project references are either `<project-id>` or `projects/<project-id>`.
 Authored render inputs stay under `projects/`.
 `bgm.mp3` is optional authored input. When present, rendering plays it under
 the narration and trims playback to the rendered background duration. The file
-must be at least as long as the rendered video. The default narration and BGM
-render volumes are defined in `src/rvs/remotion/props.ts`.
+must be at least as long as the rendered video. Default render volumes are
+defined in `src/rvs/remotion/props.ts`.
 `caption-blocks.json` uses `format: "caption_blocks/v1"` and owns ordered
 `file_name` slug and `caption` blocks, with optional `narration` text for
 TTS-specific reading. `tts` generates numbered MP3 files from block order and
