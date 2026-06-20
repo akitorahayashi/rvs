@@ -4,11 +4,18 @@ import {
   parseShortRenderProps,
 } from '../../src/rvs/remotion/props';
 
+const sampleBgmVolume = 0.35;
+const sampleBackgroundVideoVolume = 0.75;
+const sampleNarrationVolume = 1.25;
+
 describe('Remotion props', () => {
   test('accepts valid render props', () => {
     expect(
       createRenderProps({
         backgroundVideo: 'background.mp4',
+        backgroundVideoVolume: sampleBackgroundVideoVolume,
+        bgm: 'bgm.mp3',
+        bgmVolume: sampleBgmVolume,
         captions: [
           {
             durationInFrames: 30,
@@ -28,10 +35,14 @@ describe('Remotion props', () => {
             startFrame: 0,
           },
         ],
+        narrationVolume: sampleNarrationVolume,
         width: 720,
       }),
     ).toEqual({
       backgroundVideo: 'background.mp4',
+      backgroundVideoVolume: sampleBackgroundVideoVolume,
+      bgm: 'bgm.mp3',
+      bgmVolume: sampleBgmVolume,
       captions: [
         {
           durationInFrames: 30,
@@ -51,6 +62,7 @@ describe('Remotion props', () => {
           startFrame: 0,
         },
       ],
+      narrationVolume: sampleNarrationVolume,
       width: 720,
     });
   });
@@ -59,6 +71,7 @@ describe('Remotion props', () => {
     expect(() =>
       parseShortRenderProps({
         backgroundVideo: 'background.mp4',
+        backgroundVideoVolume: sampleBackgroundVideoVolume,
         captions: [
           {
             durationInFrames: 0,
@@ -71,13 +84,63 @@ describe('Remotion props', () => {
         fps: 30,
         height: 1280,
         narration: [],
+        narrationVolume: sampleNarrationVolume,
         width: 720,
+        bgmVolume: sampleBgmVolume,
       }),
     ).toThrow('captions.0.durationInFrames');
 
     expect(() =>
       parseShortRenderProps({
         backgroundVideo: 'background.mp4',
+        backgroundVideoVolume: sampleBackgroundVideoVolume,
+        bgm: ' ',
+        bgmVolume: sampleBgmVolume,
+        captions: [],
+        durationInFrames: 30,
+        fps: 30,
+        height: 1280,
+        narration: [],
+        narrationVolume: sampleNarrationVolume,
+        width: 720,
+      }),
+    ).toThrow('bgm');
+
+    expect(() =>
+      parseShortRenderProps({
+        backgroundVideo: 'background.mp4',
+        backgroundVideoVolume: sampleBackgroundVideoVolume,
+        bgmVolume: -0.1,
+        captions: [],
+        durationInFrames: 30,
+        fps: 30,
+        height: 1280,
+        narration: [],
+        narrationVolume: sampleNarrationVolume,
+        width: 720,
+      }),
+    ).toThrow('bgmVolume');
+
+    expect(() =>
+      parseShortRenderProps({
+        backgroundVideo: 'background.mp4',
+        backgroundVideoVolume: -0.1,
+        bgmVolume: sampleBgmVolume,
+        captions: [],
+        durationInFrames: 30,
+        fps: 30,
+        height: 1280,
+        narration: [],
+        narrationVolume: sampleNarrationVolume,
+        width: 720,
+      }),
+    ).toThrow('backgroundVideoVolume');
+
+    expect(() =>
+      parseShortRenderProps({
+        backgroundVideo: 'background.mp4',
+        backgroundVideoVolume: sampleBackgroundVideoVolume,
+        bgmVolume: sampleBgmVolume,
         captions: [],
         durationInFrames: 30,
         fps: 30,
@@ -90,6 +153,7 @@ describe('Remotion props', () => {
             startFrame: 0,
           },
         ],
+        narrationVolume: sampleNarrationVolume,
         width: 720,
       }),
     ).toThrow('narration.0.audioFile');

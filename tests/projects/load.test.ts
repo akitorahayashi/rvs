@@ -96,6 +96,23 @@ describe('loadRenderProject', () => {
       path.join(projectDirectory, 'caption-blocks.json'),
     );
     expect(project.audioDirectory).toBe(path.join(projectDirectory, 'audio'));
+    expect(project.bgmPath).toBeUndefined();
+    expect(project.bgmAssetPath).toBeUndefined();
+  });
+
+  test('resolves optional bgm input when present', async () => {
+    await createCaptionBlocksProject('with-bgm');
+    const projectDirectory = path.join(rootDirectory, 'projects', 'with-bgm');
+    await writeFile(path.join(projectDirectory, 'background.mp4'), '');
+    await writeFile(path.join(projectDirectory, 'bgm.mp3'), '');
+
+    const project = await loadRenderProject({
+      project: 'with-bgm',
+      rootDirectory,
+    });
+
+    expect(project.bgmPath).toBe(path.join(projectDirectory, 'bgm.mp3'));
+    expect(project.bgmAssetPath).toBe('bgm.mp3');
   });
 
   test('rejects project input symlinks that escape the project directory', async () => {

@@ -18,14 +18,25 @@ export function Short(props: ShortRenderProps) {
           objectFit: 'cover',
           width: '100%',
         }}
+        volume={props.backgroundVideoVolume}
       />
+      {props.bgm ? (
+        <Audio
+          src={staticFile(props.bgm)}
+          trimAfter={props.durationInFrames}
+          volume={props.bgmVolume}
+        />
+      ) : null}
       {props.narration.map((cue) => (
         <Sequence
           durationInFrames={cue.durationInFrames}
           from={cue.startFrame}
           key={`audio-${cue.id}`}
         >
-          <Audio src={staticFile(cue.audioFile)} />
+          <Audio
+            src={staticFile(cue.audioFile)}
+            volume={props.narrationVolume}
+          />
         </Sequence>
       ))}
       {props.captions.map((cue) => (
