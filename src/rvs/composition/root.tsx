@@ -2,7 +2,9 @@ import { Composition, registerRoot } from 'remotion';
 import {
   compositionId,
   defaultRenderProps,
+  parseShortRenderProps,
   type ShortRenderProps,
+  shortRenderPropsSchema,
 } from '../remotion/props';
 import { Short } from './short';
 
@@ -10,11 +12,12 @@ function Root() {
   return (
     <Composition
       calculateMetadata={({ props }: { props: ShortRenderProps }) => {
+        const renderProps = parseShortRenderProps(props);
         return {
-          durationInFrames: props.durationInFrames,
-          fps: props.fps,
-          height: props.height,
-          width: props.width,
+          durationInFrames: renderProps.durationInFrames,
+          fps: renderProps.fps,
+          height: renderProps.height,
+          width: renderProps.width,
         };
       }}
       component={Short}
@@ -23,6 +26,7 @@ function Root() {
       fps={defaultRenderProps.fps}
       height={defaultRenderProps.height}
       id={compositionId}
+      schema={shortRenderPropsSchema}
       width={defaultRenderProps.width}
     />
   );

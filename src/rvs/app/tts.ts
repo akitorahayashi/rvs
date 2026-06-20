@@ -1,7 +1,10 @@
 import { lstat, mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { writeMp3 as writeMp3File } from '../audio/mp3';
-import { createNarrationProgress } from '../audio/progress';
+import {
+  createNarrationProgress,
+  type NarrationProgress,
+} from '../audio/progress';
 import { readCaptionBlocks } from '../caption-blocks/read';
 import { OutputContractError } from '../errors';
 import { loadCaptionBlocksProject } from '../projects/load';
@@ -11,6 +14,7 @@ import { synthesizeWav, voicevoxUrl } from '../voicevox/synthesis';
 export interface RunTtsRequest {
   rootDirectory?: string;
   project: string;
+  createProgress?: (total: number) => NarrationProgress;
   synthesize?: typeof synthesizeWav;
   writeMp3?: typeof writeMp3File;
 }
@@ -30,6 +34,7 @@ export async function runTts(request: RunTtsRequest): Promise<RunTtsResult> {
     rootDirectory,
   });
   const blocks = await readCaptionBlocks(project.captionBlocksPath);
+  const createProgress = request.createProgress ?? createNarrationProgress;
   const synthesize = request.synthesize ?? synthesizeWav;
   const writeMp3 = request.writeMp3 ?? writeMp3File;
 
@@ -37,7 +42,7 @@ export async function runTts(request: RunTtsRequest): Promise<RunTtsResult> {
 
   const engineUrl = voicevoxUrl();
   const audioPaths = new Array<string>(blocks.length);
-  const progress = createNarrationProgress(blocks.length);
+  const progress = createProgress(blocks.length);
 
   let nextIndex = 0;
   let failed = false;

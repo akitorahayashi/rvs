@@ -1,118 +1,88 @@
+import { z } from 'zod';
 import { CaptionBlockContractError } from '../errors';
+import { formatZodError } from '../zod-error';
 
 const formatId = 'caption_blocks/v1';
 const fileNamePattern = /^\d{2,3}_[^/\\\0]+\.mp3$/u;
 const maxCaptionLength = 15;
 
-export interface CaptionBlock {
-  caption: string;
-  fileName: string;
-  narration?: string;
+function requiredTextSchema(fieldName: string) {
+  return z.string().trim().min(1, `${fieldName} must not be empty`);
 }
 
+const captionSchema = requiredTextSchema('caption').refine(
+  (caption) => Array.from(caption).length <= maxCaptionLength,
+  `caption must be ${maxCaptionLength} characters or fewer`,
+);
+const fileNameSchema = requiredTextSchema('file_name').regex(
+  fileNamePattern,
+  'file_name must be a numbered MP3 filename like 01_caption.mp3',
+);
+
+const captionBlockSchema = z
+  .object({
+    caption: captionSchema,
+    file_name: fileNameSchema,
+    narration: requiredTextSchema('narration').optional(),
+  })
+  .strict()
+  .transform((block) => ({
+    caption: block.caption,
+    fileName: block.file_name,
+    narration: block.narration,
+  }));
+
+const captionBlockDocumentSchema = z
+  .object({
+    blocks: z.array(captionBlockSchema).nonempty(),
+    format: z.literal(formatId),
+  })
+  .strict()
+  .transform((document) => document.blocks);
+
+export type CaptionBlock = z.infer<typeof captionBlockSchema>;
+
 export function parseCaptionBlockDocument(document: unknown): CaptionBlock[] {
-  if (!isObject(document)) {
-    throw invalidDocument('document must be an object');
+  const blocks = parseCaptionBlockShape(document);
+  validateCaptionBlockRules(blocks);
+
+  return blocks;
+}
+
+function parseCaptionBlockShape(document: unknown): CaptionBlock[] {
+  const result = captionBlockDocumentSchema.safeParse(document);
+  if (!result.success) {
+    throw invalidDocument(
+      formatZodError(result.error, { numberPathOffset: 1 }),
+    );
   }
 
-  if (document.format !== formatId) {
-    throw invalidDocument(`format must be '${formatId}'`);
-  }
+  return result.data;
+}
 
-  if (!Array.isArray(document.blocks) || document.blocks.length === 0) {
-    throw invalidDocument('blocks must be a non-empty array');
-  }
-
+function validateCaptionBlockRules(blocks: readonly CaptionBlock[]): void {
   const fileNames = new Set<string>();
 
-  return document.blocks.map((block, index) => {
-    if (!isObject(block)) {
-      throw invalidBlock(index + 1, 'block must be an object');
-    }
-
-    const fileName = readFileName(block.file_name, index + 1);
-    if (readFileNumber(fileName) !== index + 1) {
+  for (const [index, block] of blocks.entries()) {
+    if (readFileNumber(block.fileName) !== index + 1) {
       throw invalidBlock(
         index + 1,
         'file_name number must match the block position',
       );
     }
 
-    if (fileNames.has(fileName)) {
-      throw invalidBlock(index + 1, `file_name '${fileName}' is not unique`);
+    if (fileNames.has(block.fileName)) {
+      throw invalidBlock(
+        index + 1,
+        `file_name '${block.fileName}' is not unique`,
+      );
     }
-    fileNames.add(fileName);
-
-    return {
-      caption: readCaption(block.caption, index + 1),
-      fileName,
-      narration: readNarration(block.narration, index + 1),
-    };
-  });
-}
-
-function readFileName(value: unknown, blockNumber: number): string {
-  if (typeof value !== 'string') {
-    throw invalidBlock(blockNumber, 'file_name must be a string');
+    fileNames.add(block.fileName);
   }
-
-  const fileName = value.trim();
-  if (fileName === '') {
-    throw invalidBlock(blockNumber, 'file_name must not be empty');
-  }
-
-  if (!fileNamePattern.test(fileName)) {
-    throw invalidBlock(
-      blockNumber,
-      'file_name must be a numbered MP3 filename like 01_caption.mp3',
-    );
-  }
-
-  return fileName;
 }
 
 function readFileNumber(fileName: string): number {
   return Number.parseInt(fileName, 10);
-}
-
-function readCaption(value: unknown, blockNumber: number): string {
-  if (typeof value !== 'string') {
-    throw invalidBlock(blockNumber, 'caption must be a string');
-  }
-
-  const caption = value.trim();
-  if (caption === '') {
-    throw invalidBlock(blockNumber, 'caption must not be empty');
-  }
-
-  if (Array.from(caption).length > maxCaptionLength) {
-    throw invalidBlock(
-      blockNumber,
-      `caption must be ${maxCaptionLength} characters or fewer`,
-    );
-  }
-
-  return caption;
-}
-
-function readNarration(
-  value: unknown,
-  blockNumber: number,
-): string | undefined {
-  if (value === undefined) {
-    return undefined;
-  }
-
-  if (typeof value !== 'string') {
-    throw invalidBlock(blockNumber, 'narration must be a string');
-  }
-
-  const narration = value.trim();
-  if (narration === '') {
-    throw invalidBlock(blockNumber, 'narration must not be empty');
-  }
-
-  return narration;
 }
 
 function invalidDocument(reason: string): CaptionBlockContractError {
@@ -128,8 +98,4 @@ function invalidBlock(
   return new CaptionBlockContractError(
     `caption-blocks.json block ${idOrIndex} is invalid: ${reason}.`,
   );
-}
-
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

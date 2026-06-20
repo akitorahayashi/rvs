@@ -5,6 +5,10 @@ import { runTts } from '../../src/rvs/app/tts';
 import type { VoicevoxProfile } from '../../src/rvs/voicevox/profile';
 
 const rootDirectory = path.join(process.cwd(), '.tmp', 'tests', 'tts');
+const createSilentProgress = () => ({
+  advance() {},
+  finish() {},
+});
 
 describe('runTts', () => {
   test('generates numbered MP3 files from caption blocks', async () => {
@@ -19,6 +23,7 @@ describe('runTts', () => {
     );
 
     const result = await runTts({
+      createProgress: createSilentProgress,
       project: 'demo',
       rootDirectory,
       synthesize: async (
@@ -64,6 +69,7 @@ describe('runTts', () => {
     const synthesizedTexts: string[] = [];
 
     await runTts({
+      createProgress: createSilentProgress,
       project: 'spoken',
       rootDirectory,
       synthesize: async (
