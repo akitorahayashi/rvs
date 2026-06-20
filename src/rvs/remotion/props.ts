@@ -7,9 +7,13 @@ import { formatZodError } from '../zod-error';
 export const compositionId = 'captioned-short';
 
 const requiredStringSchema = z.string().trim().min(1);
+const nonNegativeNumberSchema = z.number().finite().nonnegative();
 const positiveNumberSchema = z.number().finite().positive();
 const positiveIntegerSchema = z.number().int().positive();
 const nonNegativeIntegerSchema = z.number().int().nonnegative();
+
+export const defaultBgmVolume = 0.55;
+export const defaultNarrationVolume = 1.0;
 
 export const captionCueSchema = z
   .object({
@@ -33,11 +37,13 @@ export const shortRenderPropsSchema = z
   .object({
     backgroundVideo: requiredStringSchema,
     bgm: requiredStringSchema.optional(),
+    bgmVolume: nonNegativeNumberSchema,
     captions: z.array(captionCueSchema),
     durationInFrames: positiveIntegerSchema,
     fps: positiveNumberSchema,
     height: positiveIntegerSchema,
     narration: z.array(narrationFrameCueSchema),
+    narrationVolume: nonNegativeNumberSchema,
     width: positiveIntegerSchema,
   })
   .strict();
@@ -47,22 +53,26 @@ export type ShortRenderProps = z.infer<typeof shortRenderPropsSchema>;
 export interface CreateRenderPropsRequest {
   backgroundVideo: string;
   bgm?: string;
+  bgmVolume: number;
   captions: CaptionCue[];
   durationInFrames: number;
   fps: number;
   height: number;
   narration: NarrationFrameCue[];
+  narrationVolume: number;
   width: number;
 }
 
 export const defaultRenderProps = parseShortRenderProps({
   backgroundVideo: 'background.mp4',
   bgm: undefined,
+  bgmVolume: defaultBgmVolume,
   captions: [],
   durationInFrames: 1,
   fps: 30,
   height: 1280,
   narration: [],
+  narrationVolume: defaultNarrationVolume,
   width: 720,
 });
 

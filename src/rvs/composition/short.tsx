@@ -20,7 +20,11 @@ export function Short(props: ShortRenderProps) {
         }}
       />
       {props.bgm ? (
-        <Audio src={staticFile(props.bgm)} trimAfter={props.durationInFrames} />
+        <Audio
+          src={staticFile(props.bgm)}
+          trimAfter={props.durationInFrames}
+          volume={props.bgmVolume}
+        />
       ) : null}
       {props.narration.map((cue) => (
         <Sequence
@@ -28,7 +32,10 @@ export function Short(props: ShortRenderProps) {
           from={cue.startFrame}
           key={`audio-${cue.id}`}
         >
-          <Audio src={staticFile(cue.audioFile)} />
+          <Audio
+            src={staticFile(cue.audioFile)}
+            volume={props.narrationVolume}
+          />
         </Sequence>
       ))}
       {props.captions.map((cue) => (

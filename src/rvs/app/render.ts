@@ -6,7 +6,11 @@ import { readProjectNarrationCues } from '../narration/project-timeline';
 import { toFrameNarrationCues } from '../narration/timeline';
 import { loadRenderProject } from '../projects/load';
 import { createOutputPath } from '../projects/paths';
-import { createRenderProps } from '../remotion/props';
+import {
+  createRenderProps,
+  defaultBgmVolume,
+  defaultNarrationVolume,
+} from '../remotion/props';
 import { renderShortVideo } from '../remotion/render';
 import { assertCuesFitVideo, toFrameCues } from '../subtitles/timing';
 
@@ -62,11 +66,13 @@ export async function renderProject(
   const props = createRenderProps({
     backgroundVideo: project.backgroundAssetPath,
     bgm: project.bgmAssetPath,
+    bgmVolume: defaultBgmVolume,
     captions: captionCues,
     durationInFrames: metadata.durationInFrames,
     fps: metadata.fps,
     height: metadata.height,
     narration: narrationFrameCues,
+    narrationVolume: defaultNarrationVolume,
     width: metadata.width,
   });
 
