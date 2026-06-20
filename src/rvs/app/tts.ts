@@ -1,6 +1,7 @@
 import { lstat, mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { writeMp3 as writeMp3File } from '../audio/mp3';
+import { narrationAudioFileName } from '../audio/naming';
 import {
   createNarrationProgress,
   type NarrationProgress,
@@ -54,7 +55,10 @@ export async function runTts(request: RunTtsRequest): Promise<RunTtsResult> {
       if (block === undefined) {
         continue;
       }
-      const outputPath = path.join(project.audioDirectory, block.fileName);
+      const outputPath = path.join(
+        project.audioDirectory,
+        narrationAudioFileName(index, block.fileName),
+      );
       try {
         const wavBytes = await synthesize(
           engineUrl,

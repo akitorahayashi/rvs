@@ -61,7 +61,7 @@ describe('runTts', () => {
     await createCaptionBlocksProject('spoken', [
       {
         caption: '字幕',
-        file_name: '01_first.mp3',
+        file_name: 'first',
         narration: '読み上げる音声',
       },
     ]);
@@ -98,11 +98,11 @@ async function createCaptionBlocksProject(
   }> = [
     {
       caption: 'first',
-      file_name: '01_first.mp3',
+      file_name: 'first',
     },
     {
       caption: 'second',
-      file_name: '02_second.mp3',
+      file_name: 'second',
     },
   ],
 ): Promise<void> {

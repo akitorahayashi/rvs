@@ -1,6 +1,7 @@
 import { realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { readAudioDuration } from '../audio/duration';
+import { narrationAudioFileName } from '../audio/naming';
 import { readCaptionBlocks } from '../caption-blocks/read';
 import { ProjectContractError } from '../errors';
 import type { NarrationCue } from './cue';
@@ -27,17 +28,18 @@ export async function readProjectNarrationCues(
 
   return scheduleNarrationCues(
     await Promise.all(
-      blocks.map(async (block) => {
-        const displayPath = `projects/${request.project.id}/audio/${block.fileName}`;
+      blocks.map(async (block, index) => {
+        const fileName = narrationAudioFileName(index, block.fileName);
+        const displayPath = `projects/${request.project.id}/audio/${fileName}`;
         const audioPath = await requireAudioFile({
           audioDirectory,
           displayPath,
-          fileName: block.fileName,
+          fileName,
         });
         const durationSeconds = await readDuration(audioPath, displayPath);
 
         return {
-          audioFile: toAudioAssetPath(block.fileName),
+          audioFile: toAudioAssetPath(fileName),
           durationMs: durationSeconds * 1000,
           text: block.caption,
         };

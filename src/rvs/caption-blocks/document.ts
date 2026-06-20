@@ -3,7 +3,7 @@ import { CaptionBlockContractError } from '../errors';
 import { formatZodError } from '../zod-error';
 
 const formatId = 'caption_blocks/v1';
-const fileNamePattern = /^\d{2,3}_[^/\\\0]+\.mp3$/u;
+const fileNamePattern = /^[a-z0-9]+(?:_[a-z0-9]+)*$/u;
 const maxCaptionLength = 15;
 
 function requiredTextSchema(fieldName: string) {
@@ -16,7 +16,7 @@ const captionSchema = requiredTextSchema('caption').refine(
 );
 const fileNameSchema = requiredTextSchema('file_name').regex(
   fileNamePattern,
-  'file_name must be a numbered MP3 filename like 01_caption.mp3',
+  'file_name must be a lower snake name without a number or extension',
 );
 
 const captionBlockSchema = z
@@ -64,13 +64,6 @@ function validateCaptionBlockRules(blocks: readonly CaptionBlock[]): void {
   const fileNames = new Set<string>();
 
   for (const [index, block] of blocks.entries()) {
-    if (readFileNumber(block.fileName) !== index + 1) {
-      throw invalidBlock(
-        index + 1,
-        'file_name number must match the block position',
-      );
-    }
-
     if (fileNames.has(block.fileName)) {
       throw invalidBlock(
         index + 1,
@@ -79,10 +72,6 @@ function validateCaptionBlockRules(blocks: readonly CaptionBlock[]): void {
     }
     fileNames.add(block.fileName);
   }
-}
-
-function readFileNumber(fileName: string): number {
-  return Number.parseInt(fileName, 10);
 }
 
 function invalidDocument(reason: string): CaptionBlockContractError {
