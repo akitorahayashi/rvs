@@ -28,13 +28,10 @@ export function Caption(props: CaptionProps) {
     >
       <div
         style={{
-          backgroundColor: 'rgba(0, 0, 0, 0.64)',
-          borderRadius: 14,
-          boxShadow: '0 14px 34px rgba(0, 0, 0, 0.35)',
           color: 'white',
           fontFamily:
             'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-          fontSize: 44,
+          fontSize: 54,
           fontWeight: 800,
           lineHeight: 1.24,
           maxWidth: '100%',
@@ -60,18 +57,25 @@ function createAnimation(request: { durationInFrames: number; frame: number }) {
     };
   }
 
-  const edgeFrames = Math.min(
+  const enterFrames = Math.min(
     8,
     Math.max(2, Math.floor(request.durationInFrames / 3)),
   );
-  const exitStart = Math.max(
-    edgeFrames + 1,
-    request.durationInFrames - edgeFrames,
+  /*
+  const exitFrames = Math.min(
+    4,
+    Math.max(2, Math.floor(request.durationInFrames / 6)),
   );
-  const enter = interpolate(request.frame, [0, edgeFrames], [0, 1], {
+  const exitStart = Math.max(
+    enterFrames + 1,
+    request.durationInFrames - exitFrames,
+  );
+  */
+  const enter = interpolate(request.frame, [0, enterFrames], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
+  /*
   const exit = interpolate(
     request.frame,
     [exitStart, request.durationInFrames],
@@ -81,10 +85,11 @@ function createAnimation(request: { durationInFrames: number; frame: number }) {
       extrapolateRight: 'clamp',
     },
   );
+  */
 
   return {
-    opacity: Math.min(enter, exit),
-    scale: interpolate(enter, [0, 1], [0.96, 1]),
-    translateY: interpolate(enter, [0, 1], [18, 0]),
+    opacity: enter,
+    scale: interpolate(enter, [0, 1], [1.05, 1]),
+    translateY: interpolate(enter, [0, 1], [-9, 0]),
   };
 }

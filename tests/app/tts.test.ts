@@ -50,24 +50,62 @@ describe('runTts', () => {
       ),
     ).rejects.toThrow();
   });
+
+  test('uses narration when provided for synthesis', async () => {
+    await resetRoot();
+    await createCaptionBlocksProject('spoken', [
+      {
+        caption: '字幕',
+        file_name: '01_first.mp3',
+        narration: '読み上げる音声',
+      },
+    ]);
+
+    const synthesizedTexts: string[] = [];
+
+    await runTts({
+      project: 'spoken',
+      rootDirectory,
+      synthesize: async (
+        _engineUrl: string,
+        text: string,
+        _profile: VoicevoxProfile,
+      ) => {
+        synthesizedTexts.push(text);
+        return new Uint8Array([text.length]);
+      },
+      writeMp3: async (wavBytes: Uint8Array, outputPath: string) => {
+        await writeFile(outputPath, wavBytes);
+      },
+    });
+
+    expect(synthesizedTexts).toEqual(['読み上げる音声']);
+  });
 });
 
-async function createCaptionBlocksProject(id: string): Promise<void> {
+async function createCaptionBlocksProject(
+  id: string,
+  blocks: Array<{
+    caption: string;
+    file_name: string;
+    narration?: string;
+  }> = [
+    {
+      caption: 'first',
+      file_name: '01_first.mp3',
+    },
+    {
+      caption: 'second',
+      file_name: '02_second.mp3',
+    },
+  ],
+): Promise<void> {
   const directory = path.join(rootDirectory, 'projects', id);
   await mkdir(directory, { recursive: true });
   await writeFile(
     path.join(directory, 'caption-blocks.json'),
     JSON.stringify({
-      blocks: [
-        {
-          file_name: '01_first.mp3',
-          text: 'first',
-        },
-        {
-          file_name: '02_second.mp3',
-          text: 'second',
-        },
-      ],
+      blocks,
       format: 'caption_blocks/v1',
     }),
   );
