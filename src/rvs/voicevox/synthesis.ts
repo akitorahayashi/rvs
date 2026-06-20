@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { MediaContractError } from '../errors';
+import { formatZodError } from '../zod-error';
 import { defaultVoicevoxUrl } from './engine';
 import { parseVoicevoxProfile, type VoicevoxProfile } from './profile';
 
@@ -138,18 +139,4 @@ async function fetchVoicevox(
       `VOICEVOX ${request.context} request failed: ${message}`,
     );
   }
-}
-
-function formatZodError(error: z.ZodError): string {
-  const issue = error.issues[0];
-  if (issue === undefined) {
-    return 'schema validation failed';
-  }
-
-  const path = issue.path.join('.');
-  if (path === '') {
-    return issue.message;
-  }
-
-  return `${path}: ${issue.message}`;
 }

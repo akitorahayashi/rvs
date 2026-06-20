@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { CaptionBlockContractError } from '../errors';
+import { formatZodError } from '../zod-error';
 
 const formatId = 'caption_blocks/v1';
 const fileNamePattern = /^\d{2,3}_[^/\\\0]+\.mp3$/u;
@@ -51,7 +52,9 @@ export function parseCaptionBlockDocument(document: unknown): CaptionBlock[] {
 function parseCaptionBlockShape(document: unknown): CaptionBlock[] {
   const result = captionBlockDocumentSchema.safeParse(document);
   if (!result.success) {
-    throw invalidDocument(formatZodError(result.error));
+    throw invalidDocument(
+      formatZodError(result.error, { numberPathOffset: 1 }),
+    );
   }
 
   return result.data;
@@ -95,21 +98,4 @@ function invalidBlock(
   return new CaptionBlockContractError(
     `caption-blocks.json block ${idOrIndex} is invalid: ${reason}.`,
   );
-}
-
-function formatZodError(error: z.ZodError): string {
-  const issue = error.issues[0];
-  if (issue === undefined) {
-    return 'schema validation failed';
-  }
-
-  const path = issue.path
-    .map((segment) => (typeof segment === 'number' ? segment + 1 : segment))
-    .join('.');
-
-  if (path === '') {
-    return issue.message;
-  }
-
-  return `${path}: ${issue.message}`;
 }

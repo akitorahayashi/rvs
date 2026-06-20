@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { RuntimeContractError } from '../errors';
 import type { NarrationFrameCue } from '../narration/cue';
 import type { CaptionCue } from '../subtitles/cue';
+import { formatZodError } from '../zod-error';
 
 export const compositionId = 'captioned-short';
 
@@ -77,18 +78,4 @@ export function parseShortRenderProps(props: unknown): ShortRenderProps {
   }
 
   return result.data;
-}
-
-function formatZodError(error: z.ZodError): string {
-  const issue = error.issues[0];
-  if (issue === undefined) {
-    return 'schema validation failed';
-  }
-
-  const path = issue.path.join('.');
-  if (path === '') {
-    return issue.message;
-  }
-
-  return `${path}: ${issue.message}`;
 }
