@@ -19,6 +19,9 @@ export function Short(props: ShortRenderProps) {
           width: '100%',
         }}
       />
+      {props.bgm ? (
+        <Audio src={staticFile(props.bgm)} trimAfter={props.durationInFrames} />
+      ) : null}
       {props.narration.map((cue) => (
         <Sequence
           durationInFrames={cue.durationInFrames}

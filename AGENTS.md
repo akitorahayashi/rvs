@@ -21,9 +21,12 @@ shorts from project directories.
 
 - Authored render inputs live under `projects/<project-id>/`.
 - A project contains `background.mp4` and `caption-blocks.json`.
+- A project may include `bgm.mp3` as authored background music.
 - `caption-blocks.json` uses `format: "caption_blocks/v1"` and ordered
   `file_name` slug/`caption` blocks, with optional `narration` for TTS-specific
   reading.
+- `bgm.mp3`, when present, is rendered under narration and is trimmed to the
+  rendered background duration. It must be at least that long.
 - TTS generates numbered MP3 files from block order and `file_name`.
 - Generated narration MP3 files live under `projects/<project-id>/audio/` and
   are ignored.

@@ -4,6 +4,7 @@ import { ProjectContractError } from '../errors';
 
 const audioDirectoryName = 'audio';
 const backgroundFileName = 'background.mp4';
+const bgmFileName = 'bgm.mp3';
 const captionBlocksFileName = 'caption-blocks.json';
 const projectsDirectoryName = 'projects';
 const safeProjectIdPattern = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
@@ -17,6 +18,8 @@ export interface RenderProjectFiles {
   audioDirectory: string;
   backgroundAssetPath: string;
   backgroundPath: string;
+  bgmAssetPath?: string;
+  bgmPath?: string;
   captionBlocksPath: string;
   directory: string;
   id: string;
@@ -64,11 +67,16 @@ export async function loadRenderProject(
   const project = await loadProjectDirectory(request);
 
   const backgroundPath = path.join(project.directory, backgroundFileName);
+  const bgmPath = path.join(project.directory, bgmFileName);
   const captionBlocksPath = path.join(project.directory, captionBlocksFileName);
 
   const backgroundRealPath = await requireFile(
     backgroundPath,
     `projects/${project.id}/${backgroundFileName}`,
+  );
+  const bgmRealPath = await requireOptionalFile(
+    bgmPath,
+    `projects/${project.id}/${bgmFileName}`,
   );
   const captionBlocksRealPath = await requireFile(
     captionBlocksPath,
@@ -79,6 +87,12 @@ export async function loadRenderProject(
     directory: backgroundRealPath,
     projectsDirectory: project.directory,
   });
+  if (bgmRealPath) {
+    rejectEscapedProjectDirectory({
+      directory: bgmRealPath,
+      projectsDirectory: project.directory,
+    });
+  }
   rejectEscapedProjectDirectory({
     directory: captionBlocksRealPath,
     projectsDirectory: project.directory,
@@ -94,6 +108,8 @@ export async function loadRenderProject(
     audioDirectory,
     backgroundAssetPath: backgroundFileName,
     backgroundPath: backgroundRealPath,
+    bgmAssetPath: bgmRealPath ? bgmFileName : undefined,
+    bgmPath: bgmRealPath,
     captionBlocksPath: captionBlocksRealPath,
     directory: project.directory,
     id: project.id,
@@ -226,6 +242,31 @@ async function requireFile(
     }
 
     throw new ProjectContractError(`${displayPath} is required.`);
+  }
+}
+
+async function requireOptionalFile(
+  filePath: string,
+  displayPath: string,
+): Promise<string | undefined> {
+  try {
+    const realFilePath = await realpath(filePath);
+    const stats = await stat(realFilePath);
+
+    if (!stats.isFile()) {
+      throw new ProjectContractError(`${displayPath} must be a file.`);
+    }
+
+    return realFilePath;
+  } catch (error: unknown) {
+    if (error instanceof ProjectContractError) {
+      throw error;
+    }
+    if (isMissingPathError(error)) {
+      return undefined;
+    }
+
+    throw new ProjectContractError(`${displayPath} is invalid.`);
   }
 }
 

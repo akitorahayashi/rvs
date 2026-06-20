@@ -1,4 +1,6 @@
 import path from 'node:path';
+import { readAudioDuration } from '../audio/duration';
+import { MediaContractError } from '../errors';
 import { readVideoMetadata } from '../media/video';
 import { readProjectNarrationCues } from '../narration/project-timeline';
 import { toFrameNarrationCues } from '../narration/timeline';
@@ -29,6 +31,12 @@ export async function renderProject(
     rootDirectory,
   });
   const metadata = await readVideoMetadata(project.backgroundPath);
+  await assertBgmCoversRenderDuration({
+    bgmPath: project.bgmPath,
+    durationInFrames: metadata.durationInFrames,
+    fps: metadata.fps,
+    projectId: project.id,
+  });
   const narrationCues = await readProjectNarrationCues({
     project,
   });
@@ -53,6 +61,7 @@ export async function renderProject(
   });
   const props = createRenderProps({
     backgroundVideo: project.backgroundAssetPath,
+    bgm: project.bgmAssetPath,
     captions: captionCues,
     durationInFrames: metadata.durationInFrames,
     fps: metadata.fps,
@@ -73,4 +82,29 @@ export async function renderProject(
     outputPath,
     projectId: project.id,
   };
+}
+
+export async function assertBgmCoversRenderDuration(request: {
+  bgmPath?: string;
+  durationInFrames: number;
+  fps: number;
+  projectId: string;
+  readDuration?: typeof readAudioDuration;
+}): Promise<void> {
+  if (!request.bgmPath) {
+    return;
+  }
+
+  const displayPath = `projects/${request.projectId}/bgm.mp3`;
+  const bgmDurationSeconds = await (request.readDuration ?? readAudioDuration)(
+    request.bgmPath,
+    displayPath,
+  );
+  const requiredDurationSeconds = request.durationInFrames / request.fps;
+
+  if (bgmDurationSeconds < requiredDurationSeconds) {
+    throw new MediaContractError(
+      `${displayPath} must be at least ${requiredDurationSeconds.toFixed(3)} seconds to cover the rendered background duration, but was ${bgmDurationSeconds.toFixed(3)} seconds.`,
+    );
+  }
 }

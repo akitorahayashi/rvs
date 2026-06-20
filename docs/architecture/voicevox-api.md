@@ -69,9 +69,9 @@ values for:
 This keeps engine-specific fields intact while making local narration tuning
 explicit.
 
-## Narration Profile
+## Default Narration Profile
 
-The current narration profile is:
+The default narration profile is:
 
 * `speakerId`: `2`
 * `speedScale`: `1.15`

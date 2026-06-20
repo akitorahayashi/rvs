@@ -32,6 +32,7 @@ export const narrationFrameCueSchema = z
 export const shortRenderPropsSchema = z
   .object({
     backgroundVideo: requiredStringSchema,
+    bgm: requiredStringSchema.optional(),
     captions: z.array(captionCueSchema),
     durationInFrames: positiveIntegerSchema,
     fps: positiveNumberSchema,
@@ -45,6 +46,7 @@ export type ShortRenderProps = z.infer<typeof shortRenderPropsSchema>;
 
 export interface CreateRenderPropsRequest {
   backgroundVideo: string;
+  bgm?: string;
   captions: CaptionCue[];
   durationInFrames: number;
   fps: number;
@@ -55,6 +57,7 @@ export interface CreateRenderPropsRequest {
 
 export const defaultRenderProps = parseShortRenderProps({
   backgroundVideo: 'background.mp4',
+  bgm: undefined,
   captions: [],
   durationInFrames: 1,
   fps: 30,

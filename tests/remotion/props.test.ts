@@ -9,6 +9,7 @@ describe('Remotion props', () => {
     expect(
       createRenderProps({
         backgroundVideo: 'background.mp4',
+        bgm: 'bgm.mp3',
         captions: [
           {
             durationInFrames: 30,
@@ -32,6 +33,7 @@ describe('Remotion props', () => {
       }),
     ).toEqual({
       backgroundVideo: 'background.mp4',
+      bgm: 'bgm.mp3',
       captions: [
         {
           durationInFrames: 30,
@@ -74,6 +76,19 @@ describe('Remotion props', () => {
         width: 720,
       }),
     ).toThrow('captions.0.durationInFrames');
+
+    expect(() =>
+      parseShortRenderProps({
+        backgroundVideo: 'background.mp4',
+        bgm: ' ',
+        captions: [],
+        durationInFrames: 30,
+        fps: 30,
+        height: 1280,
+        narration: [],
+        width: 720,
+      }),
+    ).toThrow('bgm');
 
     expect(() =>
       parseShortRenderProps({
