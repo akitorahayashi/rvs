@@ -93,4 +93,20 @@ describe('parseCaptionBlockDocument', () => {
       }),
     ).toThrow('narration must not be empty');
   });
+
+  test('rejects unknown document and block properties', () => {
+    expect(() =>
+      parseCaptionBlockDocument({
+        blocks: [
+          {
+            caption: 'hello',
+            extra: true,
+            file_name: '01_demo.mp3',
+          },
+        ],
+        format: 'caption_blocks/v1',
+        version: 1,
+      }),
+    ).toThrow('Unrecognized');
+  });
 });

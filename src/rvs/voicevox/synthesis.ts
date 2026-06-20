@@ -1,6 +1,23 @@
+import { z } from 'zod';
 import { MediaContractError } from '../errors';
 import { defaultVoicevoxUrl } from './engine';
-import type { VoicevoxProfile } from './profile';
+import { parseVoicevoxProfile, type VoicevoxProfile } from './profile';
+
+const voicevoxUrlSchema = z
+  .string()
+  .trim()
+  .min(1, 'must be a non-empty URL')
+  .url('must be a valid URL')
+  .refine((url) => {
+    try {
+      const protocol = new URL(url).protocol;
+      return protocol === 'http:' || protocol === 'https:';
+    } catch {
+      return true;
+    }
+  }, 'must use HTTP or HTTPS');
+
+const audioQueryResponseSchema = z.record(z.string(), z.unknown());
 
 export function voicevoxUrl(): string {
   const configuredUrl = process.env.RVS_VOICEVOX_ENGINE_URL;
@@ -8,22 +25,14 @@ export function voicevoxUrl(): string {
     return defaultVoicevoxUrl();
   }
 
-  const url = configuredUrl.trim();
-  if (url === '') {
+  const result = voicevoxUrlSchema.safeParse(configuredUrl);
+  if (!result.success) {
     throw new MediaContractError(
-      'RVS_VOICEVOX_ENGINE_URL must be a non-empty URL.',
+      `RVS_VOICEVOX_ENGINE_URL ${formatZodError(result.error)}.`,
     );
   }
 
-  try {
-    new URL(url);
-  } catch {
-    throw new MediaContractError(
-      'RVS_VOICEVOX_ENGINE_URL must be a valid URL.',
-    );
-  }
-
-  return url;
+  return result.data;
 }
 
 export async function synthesizeWav(
@@ -31,25 +40,29 @@ export async function synthesizeWav(
   text: string,
   profile: VoicevoxProfile,
 ): Promise<Uint8Array> {
+  const voicevoxProfile = parseVoicevoxProfile(profile);
   const normalizedEngineUrl = engineUrl.replace(/\/+$/u, '');
   const audioQuery = await requestAudioQuery({
     engineUrl: normalizedEngineUrl,
-    profile,
+    profile: voicevoxProfile,
     text,
   });
 
   const synthesisPayload = {
     ...audioQuery,
-    intonationScale: profile.intonationScale,
-    pitchScale: profile.pitchScale,
-    postPhonemeLength: profile.postPhonemeLength,
-    prePhonemeLength: profile.prePhonemeLength,
-    speedScale: profile.speedScale,
-    volumeScale: profile.volumeScale,
+    intonationScale: voicevoxProfile.intonationScale,
+    pitchScale: voicevoxProfile.pitchScale,
+    postPhonemeLength: voicevoxProfile.postPhonemeLength,
+    prePhonemeLength: voicevoxProfile.prePhonemeLength,
+    speedScale: voicevoxProfile.speedScale,
+    volumeScale: voicevoxProfile.volumeScale,
   };
 
   const synthesisUrl = new URL(`${normalizedEngineUrl}/synthesis`);
-  synthesisUrl.searchParams.set('speaker', profile.speakerId.toString());
+  synthesisUrl.searchParams.set(
+    'speaker',
+    voicevoxProfile.speakerId.toString(),
+  );
 
   const response = await fetchVoicevox(synthesisUrl, {
     body: JSON.stringify(synthesisPayload),
@@ -88,18 +101,24 @@ async function requestAudioQuery(request: {
     );
   }
 
-  const payload: unknown = await response.json();
-  if (!isObject(payload)) {
+  let payload: unknown;
+  try {
+    payload = await response.json();
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     throw new MediaContractError(
-      'VOICEVOX returned an invalid audio query payload.',
+      `VOICEVOX audio_query returned invalid JSON: ${message}`,
     );
   }
 
-  return payload;
-}
+  const result = audioQueryResponseSchema.safeParse(payload);
+  if (!result.success) {
+    throw new MediaContractError(
+      `VOICEVOX returned an invalid audio query payload: ${formatZodError(result.error)}.`,
+    );
+  }
 
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return result.data;
 }
 
 async function fetchVoicevox(
@@ -119,4 +138,18 @@ async function fetchVoicevox(
       `VOICEVOX ${request.context} request failed: ${message}`,
     );
   }
+}
+
+function formatZodError(error: z.ZodError): string {
+  const issue = error.issues[0];
+  if (issue === undefined) {
+    return 'schema validation failed';
+  }
+
+  const path = issue.path.join('.');
+  if (path === '') {
+    return issue.message;
+  }
+
+  return `${path}: ${issue.message}`;
 }

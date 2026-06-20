@@ -1,17 +1,46 @@
+import { z } from 'zod';
+import { RuntimeContractError } from '../errors';
 import type { NarrationFrameCue } from '../narration/cue';
 import type { CaptionCue } from '../subtitles/cue';
 
 export const compositionId = 'captioned-short';
 
-export interface ShortRenderProps extends Record<string, unknown> {
-  backgroundVideo: string;
-  captions: CaptionCue[];
-  durationInFrames: number;
-  fps: number;
-  height: number;
-  narration: NarrationFrameCue[];
-  width: number;
-}
+const requiredStringSchema = z.string().trim().min(1);
+const positiveNumberSchema = z.number().finite().positive();
+const positiveIntegerSchema = z.number().int().positive();
+const nonNegativeIntegerSchema = z.number().int().nonnegative();
+
+export const captionCueSchema = z
+  .object({
+    durationInFrames: positiveIntegerSchema,
+    id: requiredStringSchema,
+    startFrame: nonNegativeIntegerSchema,
+    text: requiredStringSchema,
+  })
+  .strict();
+
+export const narrationFrameCueSchema = z
+  .object({
+    audioFile: requiredStringSchema,
+    durationInFrames: positiveIntegerSchema,
+    id: requiredStringSchema,
+    startFrame: nonNegativeIntegerSchema,
+  })
+  .strict();
+
+export const shortRenderPropsSchema = z
+  .object({
+    backgroundVideo: requiredStringSchema,
+    captions: z.array(captionCueSchema),
+    durationInFrames: positiveIntegerSchema,
+    fps: positiveNumberSchema,
+    height: positiveIntegerSchema,
+    narration: z.array(narrationFrameCueSchema),
+    width: positiveIntegerSchema,
+  })
+  .strict();
+
+export type ShortRenderProps = z.infer<typeof shortRenderPropsSchema>;
 
 export interface CreateRenderPropsRequest {
   backgroundVideo: string;
@@ -23,7 +52,7 @@ export interface CreateRenderPropsRequest {
   width: number;
 }
 
-export const defaultRenderProps: ShortRenderProps = {
+export const defaultRenderProps = parseShortRenderProps({
   backgroundVideo: 'background.mp4',
   captions: [],
   durationInFrames: 1,
@@ -31,18 +60,35 @@ export const defaultRenderProps: ShortRenderProps = {
   height: 1280,
   narration: [],
   width: 720,
-};
+});
 
 export function createRenderProps(
   request: CreateRenderPropsRequest,
 ): ShortRenderProps {
-  return {
-    backgroundVideo: request.backgroundVideo,
-    captions: request.captions,
-    durationInFrames: request.durationInFrames,
-    fps: request.fps,
-    height: request.height,
-    narration: request.narration,
-    width: request.width,
-  };
+  return parseShortRenderProps(request);
+}
+
+export function parseShortRenderProps(props: unknown): ShortRenderProps {
+  const result = shortRenderPropsSchema.safeParse(props);
+  if (!result.success) {
+    throw new RuntimeContractError(
+      `Remotion props are invalid: ${formatZodError(result.error)}.`,
+    );
+  }
+
+  return result.data;
+}
+
+function formatZodError(error: z.ZodError): string {
+  const issue = error.issues[0];
+  if (issue === undefined) {
+    return 'schema validation failed';
+  }
+
+  const path = issue.path.join('.');
+  if (path === '') {
+    return issue.message;
+  }
+
+  return `${path}: ${issue.message}`;
 }

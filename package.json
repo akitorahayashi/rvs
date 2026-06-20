@@ -22,7 +22,8 @@
     "cac": "6.7.14",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "remotion": "4.0.454"
+    "remotion": "4.0.454",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.15",

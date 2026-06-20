@@ -5,10 +5,20 @@ import { type CaptionBlock, parseCaptionBlockDocument } from './document';
 export async function readCaptionBlocks(
   captionBlocksPath: string,
 ): Promise<CaptionBlock[]> {
-  let document: unknown;
+  let source: string;
 
   try {
-    document = JSON.parse(await readFile(captionBlocksPath, 'utf8'));
+    source = await readFile(captionBlocksPath, 'utf8');
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new CaptionBlockContractError(
+      `caption-blocks.json could not be read: ${message}`,
+    );
+  }
+
+  let document: unknown;
+  try {
+    document = JSON.parse(source);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     throw new CaptionBlockContractError(

@@ -30,6 +30,12 @@ describe('voicevoxUrl', () => {
     expect(() => voicevoxUrl()).toThrow(MediaContractError);
   });
 
+  test('rejects non-HTTP configured engine URLs', () => {
+    process.env.RVS_VOICEVOX_ENGINE_URL = 'file:///tmp/voicevox';
+
+    expect(() => voicevoxUrl()).toThrow('HTTP or HTTPS');
+  });
+
   test('falls back to the default URL when unconfigured', () => {
     delete process.env.RVS_VOICEVOX_ENGINE_URL;
 
@@ -50,6 +56,54 @@ describe('synthesizeWav', () => {
     await expect(
       synthesizeWav('http://127.0.0.1:50021', 'hello', narrationProfile),
     ).rejects.toThrow('VOICEVOX audio_query request failed');
+  });
+
+  test('preserves unknown audio query response properties', async () => {
+    let synthesisBody: Record<string, unknown> | undefined;
+
+    globalThis.fetch = (async (
+      url: Parameters<typeof fetch>[0],
+      init?: RequestInit,
+    ) => {
+      const requestUrl = new URL(String(url));
+      if (requestUrl.pathname === '/audio_query') {
+        return new Response(
+          JSON.stringify({
+            accent_phrases: [],
+            engine_specific: 'kept',
+          }),
+          { status: 200 },
+        );
+      }
+
+      synthesisBody = JSON.parse(String(init?.body));
+      return new Response(new Uint8Array([1, 2, 3]), { status: 200 });
+    }) as unknown as typeof fetch;
+
+    await synthesizeWav('http://127.0.0.1:50021', 'hello', narrationProfile);
+
+    expect(synthesisBody).toMatchObject({
+      engine_specific: 'kept',
+      speedScale: narrationProfile.speedScale,
+    });
+  });
+
+  test('distinguishes invalid audio query JSON from schema violations', async () => {
+    globalThis.fetch = (async () => {
+      return new Response('{', { status: 200 });
+    }) as unknown as typeof fetch;
+
+    await expect(
+      synthesizeWav('http://127.0.0.1:50021', 'hello', narrationProfile),
+    ).rejects.toThrow('invalid JSON');
+
+    globalThis.fetch = (async () => {
+      return new Response('[]', { status: 200 });
+    }) as unknown as typeof fetch;
+
+    await expect(
+      synthesizeWav('http://127.0.0.1:50021', 'hello', narrationProfile),
+    ).rejects.toThrow('invalid audio query payload');
   });
 });
 
