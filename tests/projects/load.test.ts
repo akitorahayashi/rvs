@@ -108,7 +108,7 @@ describe('loadRenderProject', () => {
     await writeFile(
       path.join(projectDirectory, 'caption-blocks.json'),
       JSON.stringify({
-        blocks: [{ file_name: '01_first.mp3', text: 'first' }],
+        blocks: [{ caption: 'first', file_name: '01_first.mp3' }],
         format: 'caption_blocks/v1',
       }),
     );
@@ -135,8 +135,8 @@ async function createCaptionBlocksProject(id: string): Promise<void> {
     JSON.stringify({
       blocks: [
         {
+          caption: 'first',
           file_name: '01_first.mp3',
-          text: 'first',
         },
       ],
       format: 'caption_blocks/v1',

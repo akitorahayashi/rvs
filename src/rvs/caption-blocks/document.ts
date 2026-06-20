@@ -2,11 +2,12 @@ import { CaptionBlockContractError } from '../errors';
 
 const formatId = 'caption_blocks/v1';
 const fileNamePattern = /^\d{2,3}_[^/\\\0]+\.mp3$/u;
-const maxTextLength = 15;
+const maxCaptionLength = 15;
 
 export interface CaptionBlock {
+  caption: string;
   fileName: string;
-  text: string;
+  narration?: string;
 }
 
 export function parseCaptionBlockDocument(document: unknown): CaptionBlock[] {
@@ -43,8 +44,9 @@ export function parseCaptionBlockDocument(document: unknown): CaptionBlock[] {
     fileNames.add(fileName);
 
     return {
+      caption: readCaption(block.caption, index + 1),
       fileName,
-      text: readText(block.text, index + 1),
+      narration: readNarration(block.narration, index + 1),
     };
   });
 }
@@ -73,24 +75,44 @@ function readFileNumber(fileName: string): number {
   return Number.parseInt(fileName, 10);
 }
 
-function readText(value: unknown, blockNumber: number): string {
+function readCaption(value: unknown, blockNumber: number): string {
   if (typeof value !== 'string') {
-    throw invalidBlock(blockNumber, 'text must be a string');
+    throw invalidBlock(blockNumber, 'caption must be a string');
   }
 
-  const text = value.trim();
-  if (text === '') {
-    throw invalidBlock(blockNumber, 'text must not be empty');
+  const caption = value.trim();
+  if (caption === '') {
+    throw invalidBlock(blockNumber, 'caption must not be empty');
   }
 
-  if (Array.from(text).length > maxTextLength) {
+  if (Array.from(caption).length > maxCaptionLength) {
     throw invalidBlock(
       blockNumber,
-      `text must be ${maxTextLength} characters or fewer`,
+      `caption must be ${maxCaptionLength} characters or fewer`,
     );
   }
 
-  return text;
+  return caption;
+}
+
+function readNarration(
+  value: unknown,
+  blockNumber: number,
+): string | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (typeof value !== 'string') {
+    throw invalidBlock(blockNumber, 'narration must be a string');
+  }
+
+  const narration = value.trim();
+  if (narration === '') {
+    throw invalidBlock(blockNumber, 'narration must not be empty');
+  }
+
+  return narration;
 }
 
 function invalidDocument(reason: string): CaptionBlockContractError {

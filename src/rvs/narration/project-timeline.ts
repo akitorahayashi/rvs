@@ -39,7 +39,7 @@ export async function readProjectNarrationCues(
         return {
           audioFile: toAudioAssetPath(block.fileName),
           durationMs: durationSeconds * 1000,
-          text: block.text,
+          text: block.caption,
         };
       }),
     ),

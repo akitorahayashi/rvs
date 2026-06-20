@@ -7,24 +7,28 @@ describe('parseCaptionBlockDocument', () => {
       parseCaptionBlockDocument({
         blocks: [
           {
-            file_name: ' 01_demo.mp3 ',
-            text: ' 丸呑みされる！？ ',
+            caption: ' 無料のベビーシッター ',
+            file_name: ' 01_muryo_babysitter.mp3 ',
+            narration: ' 「無料のベビーシッター」 ',
           },
           {
-            file_name: '02_intro.mp3',
-            text: 'でも実はこれ',
+            caption: '預けているんだとか',
+            file_name: '02_azukete.mp3',
+            narration: '預けているんだとか。',
           },
         ],
         format: 'caption_blocks/v1',
       }),
     ).toEqual([
       {
-        fileName: '01_demo.mp3',
-        text: '丸呑みされる！？',
+        caption: '無料のベビーシッター',
+        fileName: '01_muryo_babysitter.mp3',
+        narration: '「無料のベビーシッター」',
       },
       {
-        fileName: '02_intro.mp3',
-        text: 'でも実はこれ',
+        caption: '預けているんだとか',
+        fileName: '02_azukete.mp3',
+        narration: '預けているんだとか。',
       },
     ]);
   });
@@ -34,12 +38,12 @@ describe('parseCaptionBlockDocument', () => {
       parseCaptionBlockDocument({
         blocks: [
           {
+            caption: 'first',
             file_name: '01_first.mp3',
-            text: 'first',
           },
           {
+            caption: 'third',
             file_name: '03_third.mp3',
-            text: 'third',
           },
         ],
         format: 'caption_blocks/v1',
@@ -47,13 +51,13 @@ describe('parseCaptionBlockDocument', () => {
     ).toThrow('file_name number must match the block position');
   });
 
-  test('rejects text longer than 15 characters', () => {
+  test('rejects captions longer than 15 characters', () => {
     expect(() =>
       parseCaptionBlockDocument({
         blocks: [
           {
+            caption: '1234567890123456',
             file_name: '01_demo.mp3',
-            text: '1234567890123456',
           },
         ],
         format: 'caption_blocks/v1',
@@ -66,12 +70,27 @@ describe('parseCaptionBlockDocument', () => {
       parseCaptionBlockDocument({
         blocks: [
           {
+            caption: 'hello',
             file_name: '../demo.mp3',
-            text: 'hello',
           },
         ],
         format: 'caption_blocks/v1',
       }),
     ).toThrow('numbered MP3 filename');
+  });
+
+  test('rejects empty narration when the key is provided', () => {
+    expect(() =>
+      parseCaptionBlockDocument({
+        blocks: [
+          {
+            caption: 'hello',
+            file_name: '01_demo.mp3',
+            narration: '   ',
+          },
+        ],
+        format: 'caption_blocks/v1',
+      }),
+    ).toThrow('narration must not be empty');
   });
 });

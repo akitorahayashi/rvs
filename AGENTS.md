@@ -22,7 +22,8 @@ shorts from project directories.
 - Authored render inputs live under `projects/<project-id>/`.
 - A project contains `background.mp4` and `caption-blocks.json`.
 - `caption-blocks.json` uses `format: "caption_blocks/v1"` and
-  `file_name`/`text` narration blocks.
+  `file_name`/`caption` blocks, with optional `narration` for TTS-specific
+  reading.
 - Generated narration MP3 files live under `projects/<project-id>/audio/` and
   are ignored.
 - Generated final videos live under `output/<project-id>/<timestamp>.mp4`.

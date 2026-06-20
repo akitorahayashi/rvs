@@ -53,7 +53,7 @@ export async function runTts(request: RunTtsRequest): Promise<RunTtsResult> {
       try {
         const wavBytes = await synthesize(
           engineUrl,
-          block.text,
+          block.narration ?? block.caption,
           narrationProfile,
         );
         await writeMp3(wavBytes, outputPath);
