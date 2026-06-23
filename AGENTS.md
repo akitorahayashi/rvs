@@ -38,8 +38,9 @@ shorts from project directories.
 ## Development Rules
 
 - Keep dependencies minimal and clearly justified.
-- Use `cac` as the command-line boundary for command declaration, help, option
-  parsing, and required argument validation.
+- Delegate the command-line boundary to `cli-kit`'s `runCli` (help rendering, routing, version, exit-code mapping). `program.ts` only supplies metadata and registers commands; it imports the `CAC` type from `cli-kit`, not `cac` directly.
+- Command files declare commands on the `CAC` program via cac's API (`command`/`option`/`alias`/`action`); cac is a transitive dependency through `cli-kit`.
+- Domain errors extend `AppError` from `cli-kit`; `errors.ts` re-exports the base classes.
 - Keep the CLI surface small and explicit.
 - Keep the structure aligned to `cli/`, `app/`, and specific implementation
   domains.

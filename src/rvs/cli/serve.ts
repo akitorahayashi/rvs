@@ -1,4 +1,4 @@
-import type { CAC } from 'cac';
+import type { CAC } from 'cli-kit';
 import { runServe } from '../app/serve';
 
 export function registerServeCommand(program: CAC): void {
