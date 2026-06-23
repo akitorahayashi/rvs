@@ -1,4 +1,4 @@
-import type { CAC } from 'cac';
+import type { CAC } from 'cli-kit';
 import { renderProject } from '../app/render';
 
 export function registerRenderCommand(program: CAC): void {

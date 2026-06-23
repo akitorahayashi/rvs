@@ -1,4 +1,4 @@
-import type { CAC } from 'cac';
+import type { CAC } from 'cli-kit';
 import { runTts } from '../app/tts';
 
 export function registerTtsCommand(program: CAC): void {
