@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { parseCaptionBlockDocument } from '../../src/rvs/caption-blocks/document';
+import { parseCaptionBlockDocument } from '../../src/caption-blocks/document';
 
 describe('parseCaptionBlockDocument', () => {
   test('parses caption block documents', () => {

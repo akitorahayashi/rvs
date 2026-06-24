@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { readCaptionBlocks } from '../../src/rvs/caption-blocks/read';
+import { readCaptionBlocks } from '../../src/caption-blocks/read';
 
 const rootDirectory = path.join(process.cwd(), '.tmp', 'tests', 'caption-read');
 

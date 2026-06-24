@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { narrationProgress } from '../../src/rvs/audio/progress';
+import { narrationProgress } from '../../src/audio/progress';
 
 describe('narrationProgress', () => {
   test('renders an initial bar and a single updating line on a TTY', () => {

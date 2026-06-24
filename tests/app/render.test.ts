@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { assertBgmCoversRenderDuration } from '../../src/rvs/app/render';
+import { assertBgmCoversRenderDuration } from '../../src/app/render';
 
 describe('assertBgmCoversRenderDuration', () => {
   test('accepts missing bgm input', async () => {

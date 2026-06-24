@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { readProjectNarrationCues } from '../../src/rvs/narration/project-timeline';
+import { readProjectNarrationCues } from '../../src/narration/project-timeline';
 
 const rootDirectory = path.join(
   process.cwd(),

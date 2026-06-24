@@ -30,7 +30,7 @@ Authored render inputs stay under `projects/`.
 `bgm.mp3` is optional authored input. When present, rendering plays it under
 the narration and trims playback to the rendered background duration. The file
 must be at least as long as the rendered video. Default render volumes are
-defined in `src/rvs/remotion/props.ts`.
+defined in `src/remotion/props.ts`.
 `caption-blocks.json` uses `format: "caption_blocks/v1"` and owns ordered
 `file_name` slug and `caption` blocks, with optional `narration` text for
 TTS-specific reading. `tts` generates numbered MP3 files from block order and
@@ -80,21 +80,21 @@ bun run test
 
 The package is ESM via `type: "module"` in `package.json`.
 The repository runs the renderer through the Bun script `bun run rvs`.
-The runtime entrypoint is `src/rvs/main.ts`.
-The command-line boundary lives under `src/rvs/cli/` and uses `cac` for command
+The runtime entrypoint is `src/main.ts`.
+The command-line boundary lives under `src/cli/` and uses `cac` for command
 declaration, help, option parsing, and required argument validation.
-The application layer lives under `src/rvs/app/`.
-Project resolution lives under `src/rvs/projects/`.
-Caption block parsing lives under `src/rvs/caption-blocks/`.
+The application layer lives under `src/app/`.
+Project resolution lives under `src/projects/`.
+Caption block parsing lives under `src/caption-blocks/`.
 Narration audio naming, MP3 writing, and duration reading live under
-`src/rvs/audio/`.
-VOICEVOX communication lives under `src/rvs/voicevox/`.
-Narration timeline and frame timing live under `src/rvs/narration/` and
-`src/rvs/subtitles/`.
-Background video metadata lives under `src/rvs/media/`.
-The Remotion React composition lives under `src/rvs/composition/`.
+`src/audio/`.
+VOICEVOX communication lives under `src/voicevox/`.
+Narration timeline and frame timing live under `src/narration/` and
+`src/subtitles/`.
+Background video metadata lives under `src/media/`.
+The Remotion React composition lives under `src/composition/`.
 Direct Remotion bundling, composition selection, and rendering live under
-`src/rvs/remotion/`.
+`src/remotion/`.
 
 Rendering uses `@remotion/bundler`, `@remotion/renderer`, and
 `@remotion/media-parser` directly. The implementation does not generate root

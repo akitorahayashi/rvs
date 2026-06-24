@@ -4,7 +4,7 @@ import path from 'node:path';
 import {
   loadCaptionBlocksProject,
   loadRenderProject,
-} from '../../src/rvs/projects/load';
+} from '../../src/projects/load';
 
 const rootDirectory = path.join(process.cwd(), '.tmp', 'tests', 'projects');
 

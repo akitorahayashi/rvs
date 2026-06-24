@@ -7,16 +7,16 @@ shorts from project directories.
 
 The repository owns:
 
-- the CLI entrypoint in `src/rvs/main.ts`
-- the CLI boundary in `src/rvs/cli/`
-- the application layer in `src/rvs/app/`
-- the project contract in `src/rvs/projects/`
-- the caption block contract in `src/rvs/caption-blocks/`
-- the narration audio contract in `src/rvs/audio/`
-- the VOICEVOX client in `src/rvs/voicevox/`
-- the subtitle contract in `src/rvs/subtitles/`
-- the Remotion composition in `src/rvs/composition/`
-- direct Remotion rendering in `src/rvs/remotion/`
+- the CLI entrypoint in `src/main.ts`
+- the CLI boundary in `src/cli/`
+- the application layer in `src/app/`
+- the project contract in `src/projects/`
+- the caption block contract in `src/caption-blocks/`
+- the narration audio contract in `src/audio/`
+- the VOICEVOX client in `src/voicevox/`
+- the subtitle contract in `src/subtitles/`
+- the Remotion composition in `src/composition/`
+- direct Remotion rendering in `src/remotion/`
 - the repository-owned tests in `tests/`
 - the validation surface in `package.json`
 - the GitHub Actions automation in `.github/workflows/`
