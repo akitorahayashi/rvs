@@ -27,7 +27,7 @@ shorts from project directories.
   reading.
 - `bgm.mp3`, when present, is rendered under narration and is trimmed to the
   rendered background duration. It must be at least that long.
-- Default render volumes are defined in `src/rvs/remotion/props.ts`.
+- Default render volumes are defined in `src/remotion/props.ts`.
 - TTS generates numbered MP3 files from block order and `file_name`.
 - Generated narration MP3 files live under `projects/<project-id>/audio/` and
   are ignored.

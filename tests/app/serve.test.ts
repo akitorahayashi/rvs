@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { runServe } from '../../src/rvs/app/serve';
+import { runServe } from '../../src/app/serve';
 
 describe('runServe', () => {
   test('starts the VOICEVOX engine container with the expected docker command', async () => {

@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { runTts } from '../../src/rvs/app/tts';
-import type { VoicevoxProfile } from '../../src/rvs/voicevox/profile';
+import { runTts } from '../../src/app/tts';
+import type { VoicevoxProfile } from '../../src/voicevox/profile';
 
 const rootDirectory = path.join(process.cwd(), '.tmp', 'tests', 'tts');
 const createSilentProgress = () => ({

@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'bun:test';
-import type { NarrationCue } from '../../src/rvs/narration/cue';
+import type { NarrationCue } from '../../src/narration/cue';
 import {
   scheduleNarrationCues,
   toFrameNarrationCues,
-} from '../../src/rvs/narration/timeline';
+} from '../../src/narration/timeline';
 
 describe('scheduleNarrationCues', () => {
   test('uses audio durations to schedule narration sequentially', () => {

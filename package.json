@@ -6,7 +6,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "rvs": "bun src/rvs/main.ts",
+    "rvs": "bun src/main.ts",
     "serve": "bun run rvs serve",
     "s": "bun run rvs s",
     "test": "bun test",

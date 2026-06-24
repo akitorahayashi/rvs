@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { createOutputPath } from '../../src/rvs/projects/paths';
+import { createOutputPath } from '../../src/projects/paths';
 
 const rootDirectory = path.join(process.cwd(), '.tmp', 'tests', 'output');
 const now = new Date(2026, 5, 16, 14, 30, 5);
