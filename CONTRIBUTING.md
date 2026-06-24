@@ -2,9 +2,6 @@
 
 ## Scope
 
-`rvs` is a Bun and TypeScript CLI for preparing and rendering Remotion vertical
-shorts from project directories.
-
 The repository owns:
 
 - the CLI entrypoint in `src/main.ts`
@@ -29,7 +26,6 @@ The repository-owned tasks are:
 
 - `bun run rvs render <project-id>`
 - `bun run rvs tts <project-id>`
-- `bun run rvs srt <project-id>`
 - `bun run fix`
 - `bun run check`
 - `bun run test`

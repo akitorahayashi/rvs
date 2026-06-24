@@ -39,42 +39,41 @@ describe('render command', () => {
     const result = runCli(['--version']);
 
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toBe('rvs 0.1.0');
+    expect(result.stdout).toBe('0.1.0');
   });
 
   test('fails when a required project is missing', () => {
     const result = runCli(['render']);
 
     expect(result.exitCode).toBe(1);
-    expect(result.stderr).toContain('missing required args');
+    expect(result.stdout).toContain('Not enough positional arguments');
   });
 
   test('fails when a required tts project is missing', () => {
     const result = runCli(['tts']);
 
     expect(result.exitCode).toBe(1);
-    expect(result.stderr).toContain('missing required args');
+    expect(result.stdout).toContain('Not enough positional arguments');
   });
 
   test('fails for unexpected serve positional arguments', () => {
     const result = runCli(['serve', 'extra']);
 
     expect(result.exitCode).toBe(1);
-    expect(result.stderr).toContain('Unexpected positional arguments: extra.');
+    expect(result.stdout).toContain('Unexpected positional arguments: extra.');
   });
 
   test('fails for unexpected positional arguments', () => {
     const result = runCli(['render', 'demo', 'extra']);
 
     expect(result.exitCode).toBe(1);
-    expect(result.stderr).toContain('Unexpected positional arguments: extra.');
+    expect(result.stdout).toContain('Unexpected positional arguments: extra.');
   });
 
   test('rejects project references outside projects', () => {
     const result = runCli(['render', '../demo']);
 
     expect(result.exitCode).toBe(1);
-    expect(result.stderr).toContain('safe project ID');
-    expect(result.stdout).toBe('');
+    expect(result.stdout).toContain('safe project ID');
   });
 });

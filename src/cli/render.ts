@@ -1,11 +1,23 @@
-import type { CAC } from 'cli-kit';
+import { Command, Option } from 'clipanion';
 import { renderProject } from '../app/render';
+import { CommandLineError } from '../errors';
 
-export function registerRenderCommand(program: CAC): void {
-  program
-    .command('render <project>', 'Render one project into a captioned MP4.')
-    .action(async (project: string) => {
-      const result = await renderProject({ project });
-      process.stdout.write(`${result.outputLocation}\n`);
-    });
+export class RenderCommand extends Command {
+  static override paths = [['render']];
+  static override usage = Command.Usage({
+    description: 'Render one project into a captioned MP4.',
+  });
+
+  project = Option.String({ name: 'project', required: true });
+  extra = Option.Rest();
+
+  async execute(): Promise<void> {
+    if (this.extra.length > 0) {
+      throw new CommandLineError(
+        `Unexpected positional arguments: ${this.extra.join(', ')}.`,
+      );
+    }
+    const result = await renderProject({ project: this.project });
+    process.stdout.write(`${result.outputLocation}\n`);
+  }
 }
