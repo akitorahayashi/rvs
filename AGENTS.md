@@ -5,17 +5,9 @@
 `rvs` is a Bun and TypeScript CLI for preparing and rendering Remotion vertical
 shorts from project directories.
 
-## Runtime
+## CLI
 
-- Use Bun commands only.
-- Keep the package as ESM with `type: "module"` in `package.json`.
-- Install dependencies with `bun install`.
-- Start the local VOICEVOX engine with `bun run serve` or `bun run s`.
-- Run the CLI with `bun run rvs tts <project-id>`,
-  `bun run rvs render <project-id>`, and `bun run rvs serve`.
-- Run static validation with `bun run check`.
-- Run tests with `bun run test`.
-- Apply repository formatting with `bun run fix`.
+`main.ts` creates the `Cli` instance (clipanion), registers all `Command` subclasses, and exports `runCommandLine()`. Each command is a `Command` subclass in `src/cli/`; options are declared with `Option.*` helpers and routing uses `static paths`. Domain errors extend `AppError` from `errors.ts`; usage errors use `CommandLineError` (re-exported from clipanion's `UsageError`).
 
 ## Project Contract
 
@@ -35,23 +27,11 @@ shorts from project directories.
 - `output/.gitkeep` is tracked and generated videos under `output/` are ignored.
 - `.tmp/` is not an authored input contract.
 
-## Development Rules
+## Implementation Notes
 
-- Keep dependencies minimal and clearly justified.
-- Delegate the command-line boundary to `cli-kit`'s `runCli` (help rendering, routing, version, exit-code mapping). `program.ts` only supplies metadata and registers commands; it imports the `CAC` type from `cli-kit`, not `cac` directly.
-- Command files declare commands on the `CAC` program via cac's API (`command`/`option`/`alias`/`action`); cac is a transitive dependency through `cli-kit`.
-- Domain errors extend `AppError` from `cli-kit`; `errors.ts` re-exports the base classes.
-- Keep the CLI surface small and explicit.
-- Keep the structure aligned to `cli/`, `app/`, and specific implementation
-  domains.
-- Keep `caption_blocks/v1` as the only TTS input format until another format is
-  explicitly needed.
-- Keep VOICEVOX engine access explicit through `RVS_VOICEVOX_ENGINE_URL` or the
-  default local engine URL.
-- Keep the local VOICEVOX engine startup on the Docker image
-  `voicevox/voicevox_engine:cpu-ubuntu22.04-0.25.0`.
-- Use direct Remotion APIs instead of shelling out to the Remotion CLI.
-- Keep Remotion root source static and pass render props in memory.
-- Do not add silent fallback behavior.
-- Keep tests focused on externally observable behavior.
+- `caption_blocks/v1` is the only TTS input format.
+- VOICEVOX engine access is explicit through `RVS_VOICEVOX_ENGINE_URL` or the default local engine URL.
+- The local VOICEVOX engine runs on Docker image `voicevox/voicevox_engine:cpu-ubuntu22.04-0.25.0`.
+- Remotion rendering uses direct APIs (`@remotion/bundler`, `@remotion/renderer`, `@remotion/media-parser`); the Remotion CLI is not used.
+- Remotion root source is static; render props are passed in memory.
 - Do not read `.mx/*.md` unless explicitly requested by the user.
