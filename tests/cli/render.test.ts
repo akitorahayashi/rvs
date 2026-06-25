@@ -30,7 +30,6 @@ describe('render command', () => {
     const result = runCli([]);
 
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain('serve');
     expect(result.stdout).toContain('tts <project>');
     expect(result.stdout).toContain('render <project>');
   });
@@ -54,13 +53,6 @@ describe('render command', () => {
 
     expect(result.exitCode).toBe(1);
     expect(result.stdout).toContain('Not enough positional arguments');
-  });
-
-  test('fails for unexpected serve positional arguments', () => {
-    const result = runCli(['serve', 'extra']);
-
-    expect(result.exitCode).toBe(1);
-    expect(result.stdout).toContain('Unexpected positional arguments: extra.');
   });
 
   test('fails for unexpected positional arguments', () => {
