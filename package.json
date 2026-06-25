@@ -7,8 +7,8 @@
   "private": true,
   "scripts": {
     "rvs": "bun src/main.ts",
-    "serve": "bun run rvs serve",
-    "s": "bun run rvs s",
+    "serve": "docker run --rm --init -p 127.0.0.1:50021:50021 --name rvs-voicevox voicevox/voicevox_engine:cpu-ubuntu22.04-0.25.0",
+    "s": "docker run --rm --init -p 127.0.0.1:50021:50021 --name rvs-voicevox voicevox/voicevox_engine:cpu-ubuntu22.04-0.25.0",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
     "check": "biome check . && bun run typecheck",

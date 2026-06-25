@@ -3,7 +3,6 @@
 import { Builtins, Cli } from 'clipanion';
 import packageMetadata from '../package.json';
 import { RenderCommand } from './cli/render';
-import { ServeCommand } from './cli/serve';
 import { TtsCommand } from './cli/tts';
 
 function createCli(): Cli {
@@ -14,7 +13,6 @@ function createCli(): Cli {
   });
   cli.register(Builtins.HelpCommand);
   cli.register(Builtins.VersionCommand);
-  cli.register(ServeCommand);
   cli.register(TtsCommand);
   cli.register(RenderCommand);
   return cli;
