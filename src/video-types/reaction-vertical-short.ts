@@ -1,19 +1,30 @@
-import { mkdir, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
+import type { VoicevoxProfile } from 'vcvx-ts';
 import { z } from 'zod';
+import type { CaptionedVideoBinding } from '../captioned-video/binding';
 import { ProjectContractError } from '../errors';
-import { loadProjectManifest } from '../project-manifest/load';
+import type { LoadedProjectManifest } from '../project-manifest/load';
 import {
   fileNameSchema,
   projectIdPattern,
   rejectEscapedRoot,
 } from '../project-manifest/paths';
-import { defaultNarrationVolume } from '../remotion/props';
+import { narrationProfile } from '../speech/formats/caption-narration-v1';
 import { formatZodError } from '../zod-error';
 
 export const reactionVerticalShortTypeId = 'reaction_vertical_short';
 
 const policy = {
+  canvas: {
+    fps: 30,
+    height: 1280,
+    width: 720,
+  },
+  captionPositionType: 'bottomBand',
+  captions: {
+    bottomPercent: 18,
+    horizontalInset: 48,
+  },
   media: {
     bgmDirectory: 'media/bgm',
     outputDirectory: 'media/reaction_vertical_short/output',
@@ -40,6 +51,18 @@ const manifestSchema = z
         bgmVolume: nonNegativeNumberSchema,
         narration: z
           .object({
+            voice: z
+              .object({
+                intonationScale: z.number().finite().optional(),
+                pitchScale: z.number().finite().optional(),
+                postPhonemeLength: nonNegativeNumberSchema.optional(),
+                prePhonemeLength: nonNegativeNumberSchema.optional(),
+                speakerId: z.number().int().nonnegative().optional(),
+                speedScale: z.number().finite().positive().optional(),
+                volumeScale: nonNegativeNumberSchema.optional(),
+              })
+              .strict()
+              .optional(),
             volume: nonNegativeNumberSchema.optional(),
           })
           .strict()
@@ -65,44 +88,17 @@ const manifestSchema = z
 
 export type ReactionVerticalShortManifest = z.infer<typeof manifestSchema>;
 
-export interface ReactionVerticalShortFiles {
-  bgmAssetPath: string;
-  bgmPath: string;
-  captionsPath: string;
-  directory: string;
-  displayPaths: {
-    bgm: string;
-    captions: string;
-    narrationDirectory: string;
-    output: string;
-    source: string;
-  };
-  id: string;
-  narrationDirectory: string;
-  outputPath: string;
-  sourceAssetPath: string;
-  sourcePath: string;
-  videoName: string;
-  volumes: {
-    bgm: number;
-    narration: number;
-    source: number;
-  };
-}
+export const reactionVerticalShortType = {
+  load(manifest: LoadedProjectManifest): CaptionedVideoBinding {
+    return loadReactionVerticalShort(manifest);
+  },
+  type: reactionVerticalShortTypeId,
+};
 
-export interface LoadReactionVerticalShortRequest {
-  projectFile: string;
-  rootDirectory: string;
-}
-
-export async function loadReactionVerticalShort(
-  request: LoadReactionVerticalShortRequest,
-): Promise<ReactionVerticalShortFiles> {
-  const rootDirectory = await realpath(path.resolve(request.rootDirectory));
-  const loaded = await loadProjectManifest({
-    projectFile: request.projectFile,
-    rootDirectory,
-  });
+function loadReactionVerticalShort(
+  loaded: LoadedProjectManifest,
+): CaptionedVideoBinding {
+  const rootDirectory = loaded.rootDirectory;
   const project = parseManifest(loaded.manifest, loaded.displayPath);
 
   const sourceDisplayPath = path.join(
@@ -113,21 +109,12 @@ export async function loadReactionVerticalShort(
     policy.media.bgmDirectory,
     project.audio.bgm,
   );
-  const sourcePath = await requireRepositoryFile({
-    displayPath: sourceDisplayPath,
-    repositoryRelativePath: sourceDisplayPath,
-    rootDirectory,
-  });
-  const bgmPath = await requireRepositoryFile({
-    displayPath: bgmDisplayPath,
-    repositoryRelativePath: bgmDisplayPath,
-    rootDirectory,
-  });
-  const captionsPath = await requireProjectFile({
-    displayPath: `./${project.id}.captions.json`,
-    projectDirectory: loaded.directory,
-    relativePath: `${project.id}.captions.json`,
-  });
+  const sourcePath = resolveRepositoryPath(rootDirectory, sourceDisplayPath);
+  const bgmPath = resolveRepositoryPath(rootDirectory, bgmDisplayPath);
+  const captionsPath = resolveProjectPath(
+    loaded.directory,
+    `${project.id}.captions.json`,
+  );
   const narrationDirectory = path.join(
     loaded.directory,
     policy.narrationDirectory,
@@ -142,12 +129,8 @@ export async function loadReactionVerticalShort(
     rootDirectory,
     targetPath: outputPath,
   });
-  await mkdir(path.dirname(outputPath), { recursive: true });
 
   return {
-    bgmAssetPath: bgmDisplayPath,
-    bgmPath,
-    captionsPath,
     directory: loaded.directory,
     displayPaths: {
       bgm: bgmDisplayPath,
@@ -156,79 +139,70 @@ export async function loadReactionVerticalShort(
       output: outputDisplayPath,
       source: sourceDisplayPath,
     },
+    file: loaded.file,
     id: project.id,
-    narrationDirectory,
-    outputPath,
-    sourceAssetPath: sourceDisplayPath,
-    sourcePath,
-    videoName: project.video.name,
-    volumes: {
-      bgm: project.audio.bgmVolume,
-      narration: project.audio.narration?.volume ?? defaultNarrationVolume,
-      source: project.video.sourceVolume,
+    paths: {
+      bgm: bgmPath,
+      captions: captionsPath,
+      narrationDirectory,
+      output: outputPath,
+      source: sourcePath,
+    },
+    settings: {
+      audio: {
+        bgmVolume: project.audio.bgmVolume,
+        narrationVolume: project.audio.narration?.volume ?? 1.5,
+        sourceVideoVolume: project.video.sourceVolume,
+        voice: resolveNarrationVoice(project),
+      },
+      captions: {
+        position: {
+          bottomPercent: policy.captions.bottomPercent,
+          horizontalInset: policy.captions.horizontalInset,
+          type: policy.captionPositionType,
+        },
+        strokeWidthPx: project.captions.strokeWidthPx,
+      },
+      canvas: policy.canvas,
     },
   };
 }
 
-async function requireRepositoryFile(request: {
-  displayPath: string;
-  repositoryRelativePath: string;
-  rootDirectory: string;
-}): Promise<string> {
-  const filePath = path.join(
-    request.rootDirectory,
-    request.repositoryRelativePath,
-  );
+function resolveRepositoryPath(
+  rootDirectory: string,
+  repositoryRelativePath: string,
+): string {
+  const filePath = path.join(rootDirectory, repositoryRelativePath);
   rejectEscapedRoot({
-    displayPath: request.displayPath,
-    rootDirectory: request.rootDirectory,
+    displayPath: repositoryRelativePath,
+    rootDirectory,
     targetPath: filePath,
   });
-  const realFilePath = await requireFile(filePath, request.displayPath);
-  rejectEscapedRoot({
-    displayPath: request.displayPath,
-    rootDirectory: request.rootDirectory,
-    targetPath: realFilePath,
-  });
-  return realFilePath;
+  return filePath;
 }
 
-async function requireProjectFile(request: {
-  displayPath: string;
-  projectDirectory: string;
-  relativePath: string;
-}): Promise<string> {
-  const filePath = path.join(request.projectDirectory, request.relativePath);
-  const realFilePath = await requireFile(filePath, request.displayPath);
-  const relativePath = path.relative(request.projectDirectory, realFilePath);
-  if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
+function resolveProjectPath(
+  projectDirectory: string,
+  relativePath: string,
+): string {
+  const filePath = path.join(projectDirectory, relativePath);
+  const resolvedPath = path.resolve(filePath);
+  const relative = path.relative(projectDirectory, resolvedPath);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
     throw new ProjectContractError(
-      `${request.displayPath} must stay inside the project directory.`,
+      `${relativePath} must stay inside the project directory.`,
     );
   }
-  return realFilePath;
+  return resolvedPath;
 }
 
-async function requireFile(
-  filePath: string,
-  displayPath: string,
-): Promise<string> {
-  try {
-    const realFilePath = await realpath(filePath);
-    const stats = await stat(realFilePath);
-
-    if (!stats.isFile()) {
-      throw new ProjectContractError(`${displayPath} must be a file.`);
-    }
-
-    return realFilePath;
-  } catch (error: unknown) {
-    if (error instanceof ProjectContractError) {
-      throw error;
-    }
-
-    throw new ProjectContractError(`${displayPath} is required.`);
-  }
+function resolveNarrationVoice(
+  project: ReactionVerticalShortManifest,
+): VoicevoxProfile {
+  return {
+    ...narrationProfile,
+    ...project.audio.narration?.voice,
+  };
 }
 
 function parseManifest(

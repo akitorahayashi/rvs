@@ -9,6 +9,7 @@
         "@remotion/media-parser": "4.0.454",
         "@remotion/renderer": "4.0.454",
         "clipanion": "^4.0.0-rc.4",
+        "vcvx-ts": "github:akitorahayashi/vcvx-ts#d4a593a",
         "react": "19.2.3",
         "react-dom": "19.2.3",
         "remotion": "4.0.454",
@@ -458,6 +459,8 @@
     "undici-types": ["undici-types@7.24.6", "", {}, "sha512-WRNW+sJgj5OBN4/0JpHFqtqzhpbnV0GuB+OozA9gCL7a993SmU+1JBZCzLNxYsbMfIeDL+lTsphD5jN5N+n0zg=="],
 
     "update-browserslist-db": ["update-browserslist-db@1.2.3", "", { "dependencies": { "escalade": "^3.2.0", "picocolors": "^1.1.1" }, "peerDependencies": { "browserslist": ">= 4.21.0" }, "bin": { "update-browserslist-db": "cli.js" } }, "sha512-Js0m9cx+qOgDxo0eMiFGEueWztz+d4+M3rGlmKPT+T4IS/jP4ylw3Nwpu6cpTTP8R1MAC1kF4VbdLt3ARf209w=="],
+
+    "vcvx-ts": ["vcvx-ts@github:akitorahayashi/vcvx-ts#d4a593a", { "dependencies": { "zod": "4.4.3" } }, "akitorahayashi-vcvx-ts-d4a593a", "sha512-JaiyIaM3mI7NeAqpFE/PoszY8ZpKs1NnN+5xvAnRI7ohX4SGQoyXRDTl+nyEWQ9i4lSrrb86BF9dXgWp+5DxCw=="],
 
     "watchpack": ["watchpack@2.5.2", "", { "dependencies": { "graceful-fs": "^4.1.2" } }, "sha512-6i/00NBjP4yGPs+caKSyRfpTF/8Torsu0MOW3mMzIbhgISFder8i7xbqgHlLMwJrdiN8ndBV3UA1/AfzPSr+jg=="],
 

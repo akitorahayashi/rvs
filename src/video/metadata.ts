@@ -10,13 +10,16 @@ export interface VideoMetadata {
   width: number;
 }
 
-export async function readVideoMetadata(
-  videoPath: string,
-): Promise<VideoMetadata> {
-  const result = await parseVideoMetadata(videoPath);
+export async function readVideoMetadata(request: {
+  displayPath: string;
+  videoPath: string;
+}): Promise<VideoMetadata> {
+  const result = await parseVideoMetadata(request.videoPath);
 
   if (!result.dimensions) {
-    throw new MediaContractError('source video must contain a video track.');
+    throw new MediaContractError(
+      `${request.displayPath} must contain a video track.`,
+    );
   }
 
   if (
@@ -25,18 +28,24 @@ export async function readVideoMetadata(
     !Number.isFinite(result.dimensions.height) ||
     result.dimensions.height <= 0
   ) {
-    throw new MediaContractError('source video must have positive dimensions.');
+    throw new MediaContractError(
+      `${request.displayPath} must have positive dimensions.`,
+    );
   }
 
   if (
     !Number.isFinite(result.slowDurationInSeconds) ||
     result.slowDurationInSeconds <= 0
   ) {
-    throw new MediaContractError('source video must have a positive duration.');
+    throw new MediaContractError(
+      `${request.displayPath} must have a positive duration.`,
+    );
   }
 
   if (!Number.isFinite(result.slowFps) || result.slowFps <= 0) {
-    throw new MediaContractError('source video must have a positive FPS.');
+    throw new MediaContractError(
+      `${request.displayPath} must have a positive FPS.`,
+    );
   }
 
   return {

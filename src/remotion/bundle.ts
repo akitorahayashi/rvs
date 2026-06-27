@@ -11,6 +11,7 @@ export async function bundleRoot(request: BundleRootRequest): Promise<string> {
     entryPoint: path.join(
       request.rootDirectory,
       'src',
+      'captioned-video',
       'composition',
       'root.tsx',
     ),

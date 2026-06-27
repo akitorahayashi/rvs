@@ -1,8 +1,9 @@
+import type { VoicevoxProfile } from 'vcvx-ts';
+import { Client } from 'vcvx-ts';
 import { z } from 'zod';
 import { MediaContractError } from '../errors';
 import { formatZodError } from '../zod-error';
 import { defaultVoicevoxUrl } from './engine';
-import { parseVoicevoxProfile, type VoicevoxProfile } from './profile';
 
 const voicevoxUrlSchema = z
   .string()
@@ -41,29 +42,25 @@ export async function synthesizeWav(
   text: string,
   profile: VoicevoxProfile,
 ): Promise<Uint8Array> {
-  const voicevoxProfile = parseVoicevoxProfile(profile);
   const normalizedEngineUrl = engineUrl.replace(/\/+$/u, '');
   const audioQuery = await requestAudioQuery({
     engineUrl: normalizedEngineUrl,
-    profile: voicevoxProfile,
+    profile,
     text,
   });
 
   const synthesisPayload = {
     ...audioQuery,
-    intonationScale: voicevoxProfile.intonationScale,
-    pitchScale: voicevoxProfile.pitchScale,
-    postPhonemeLength: voicevoxProfile.postPhonemeLength,
-    prePhonemeLength: voicevoxProfile.prePhonemeLength,
-    speedScale: voicevoxProfile.speedScale,
-    volumeScale: voicevoxProfile.volumeScale,
+    intonationScale: profile.intonationScale,
+    pitchScale: profile.pitchScale,
+    postPhonemeLength: profile.postPhonemeLength,
+    prePhonemeLength: profile.prePhonemeLength,
+    speedScale: profile.speedScale,
+    volumeScale: profile.volumeScale,
   };
 
   const synthesisUrl = new URL(`${normalizedEngineUrl}/synthesis`);
-  synthesisUrl.searchParams.set(
-    'speaker',
-    voicevoxProfile.speakerId.toString(),
-  );
+  synthesisUrl.searchParams.set('speaker', profile.speakerId.toString());
 
   const response = await fetchVoicevox(synthesisUrl, {
     body: JSON.stringify(synthesisPayload),
@@ -77,6 +74,13 @@ export async function synthesizeWav(
   }
 
   return new Uint8Array(await response.arrayBuffer());
+}
+
+export async function assertSpeakerExists(
+  engineUrl: string,
+  speakerId: number,
+): Promise<void> {
+  await new Client(engineUrl).assertSpeakerExists(speakerId);
 }
 
 async function requestAudioQuery(request: {

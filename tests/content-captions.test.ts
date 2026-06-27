@@ -1,61 +1,40 @@
 import { describe, expect, test } from 'bun:test';
-import { mkdir, rm, symlink, writeFile } from 'node:fs/promises';
+import {
+  lstat,
+  mkdir,
+  readFile,
+  rm,
+  symlink,
+  writeFile,
+} from 'node:fs/promises';
 import path from 'node:path';
-import { loadCaptionContent } from '../src/content/captions';
+import { resetOutputDirectory } from '../src/audio/output';
 
-const rootDirectory = path.join(process.cwd(), '.tmp', 'tests', 'content');
+const rootDirectory = path.join(process.cwd(), '.tmp', 'tests', 'audio-output');
 
-describe('loadCaptionContent', () => {
-  test('resolves captions and sibling narration paths', async () => {
+describe('resetOutputDirectory', () => {
+  test('recreates narration output directories and clears stale files', async () => {
     await resetRoot();
-    const captionsPath = path.join(
-      rootDirectory,
-      'content',
-      'reaction_vertical_short',
-      'active',
-      'demo',
-      'demo.captions.json',
-    );
-    await mkdir(path.dirname(captionsPath), { recursive: true });
-    await writeFile(captionsPath, '{}');
+    const outdir = path.join(rootDirectory, 'content', 'demo', 'narration');
+    await mkdir(outdir, { recursive: true });
+    await writeFile(path.join(outdir, 'stale.mp3'), 'stale');
 
-    const content = await loadCaptionContent({
-      captionsFile:
-        'content/reaction_vertical_short/active/demo/demo.captions.json',
-      rootDirectory,
-    });
+    await resetOutputDirectory(outdir);
 
-    expect(content.id).toBe('demo');
-    expect(content.captionsPath).toBe(captionsPath);
-    expect(content.narrationDirectory).toBe(
-      path.join(path.dirname(captionsPath), 'narration'),
-    );
-    expect(content.displayPaths.narrationDirectory).toBe(
-      'content/reaction_vertical_short/active/demo/narration',
-    );
+    expect((await lstat(outdir)).isDirectory()).toBe(true);
+    await expect(readFile(path.join(outdir, 'stale.mp3'))).rejects.toThrow();
   });
 
   test('rejects narration directories that are symlinks', async () => {
     await resetRoot();
-    const projectDirectory = path.join(
-      rootDirectory,
-      'content',
-      'reaction_vertical_short',
-      'active',
-      'escape',
-    );
+    const projectDirectory = path.join(rootDirectory, 'content', 'escape');
     const outsideDirectory = path.join(rootDirectory, 'outside');
     await mkdir(projectDirectory, { recursive: true });
     await mkdir(outsideDirectory, { recursive: true });
-    await writeFile(path.join(projectDirectory, 'escape.captions.json'), '{}');
     await symlink(outsideDirectory, path.join(projectDirectory, 'narration'));
 
     await expect(
-      loadCaptionContent({
-        captionsFile:
-          'content/reaction_vertical_short/active/escape/escape.captions.json',
-        rootDirectory,
-      }),
+      resetOutputDirectory(path.join(projectDirectory, 'narration')),
     ).rejects.toThrow('narration/ must not be a symlink');
   });
 });

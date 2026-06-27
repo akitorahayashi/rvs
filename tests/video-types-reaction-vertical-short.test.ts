@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { loadReactionVerticalShort } from '../src/video-types/reaction-vertical-short';
+import { loadVideoProject } from '../src/video-types/registry';
 
 const rootDirectory = path.join(
   process.cwd(),
@@ -10,18 +10,19 @@ const rootDirectory = path.join(
   'reaction-vertical-short',
 );
 
-describe('loadReactionVerticalShort', () => {
+describe('loadVideoProject', () => {
   test('resolves content manifest files to isolated media files', async () => {
     await createProject();
 
-    const project = await loadReactionVerticalShort({
+    const loaded = await loadVideoProject({
       projectFile:
         'content/reaction_vertical_short/active/demo/demo.project.ts',
       rootDirectory,
     });
+    const project = loaded.captionedVideo;
 
     expect(project.id).toBe('demo');
-    expect(project.sourcePath).toBe(
+    expect(project.paths.source).toBe(
       path.join(
         rootDirectory,
         'media',
@@ -30,10 +31,10 @@ describe('loadReactionVerticalShort', () => {
         'demo.mp4',
       ),
     );
-    expect(project.bgmPath).toBe(
+    expect(project.paths.bgm).toBe(
       path.join(rootDirectory, 'media', 'bgm', 'music.mp3'),
     );
-    expect(project.captionsPath).toBe(
+    expect(project.paths.captions).toBe(
       path.join(
         rootDirectory,
         'content',
@@ -43,7 +44,7 @@ describe('loadReactionVerticalShort', () => {
         'demo.captions.json',
       ),
     );
-    expect(project.outputPath).toBe(
+    expect(project.paths.output).toBe(
       path.join(
         rootDirectory,
         'media',
@@ -52,10 +53,10 @@ describe('loadReactionVerticalShort', () => {
         'Demo Video.mp4',
       ),
     );
-    expect(project.sourceAssetPath).toBe(
+    expect(project.displayPaths.source).toBe(
       'media/reaction_vertical_short/source/demo.mp4',
     );
-    expect(project.bgmAssetPath).toBe('media/bgm/music.mp3');
+    expect(project.displayPaths.bgm).toBe('media/bgm/music.mp3');
   });
 
   test('rejects source paths embedded in the manifest', async () => {
@@ -65,7 +66,7 @@ describe('loadReactionVerticalShort', () => {
     });
 
     await expect(
-      loadReactionVerticalShort({
+      loadVideoProject({
         projectFile:
           'content/reaction_vertical_short/active/invalid-source/invalid-source.project.ts',
         rootDirectory,

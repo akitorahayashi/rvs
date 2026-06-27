@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { readProjectNarrationCues } from '../../src/narration/project-timeline';
+import { readCaptionBlocks } from '../../src/captioned-video/captions';
+import { readProjectNarrationCues } from '../../src/captioned-video/narration';
 
 const rootDirectory = path.join(
   process.cwd(),
@@ -38,15 +39,11 @@ describe('readProjectNarrationCues', () => {
     await writeFile(path.join(narrationDirectory, '01_first.mp3'), '');
 
     const cues = await readProjectNarrationCues({
-      project: {
-        captionsPath: path.join(projectDirectory, 'demo.captions.json'),
-        displayPaths: {
-          narrationDirectory:
-            'content/reaction_vertical_short/active/demo/narration',
-        },
-        id: 'demo',
-        narrationDirectory,
-      },
+      captionsPath: path.join(projectDirectory, 'demo.captions.json'),
+      narrationDirectory,
+      narrationDisplayPath:
+        'content/reaction_vertical_short/active/demo/narration',
+      readCaptions: readCaptionBlocks,
       readDuration: async () => 1.25,
     });
 

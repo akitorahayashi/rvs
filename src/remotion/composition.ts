@@ -1,8 +1,11 @@
 import { selectComposition } from '@remotion/renderer';
-import { compositionId, type ShortRenderProps } from './props';
+import {
+  type CaptionedVideoRenderProps,
+  captionedVideoCompositionId,
+} from '../captioned-video/render-props';
 
 export interface SelectShortCompositionRequest {
-  inputProps: ShortRenderProps;
+  inputProps: CaptionedVideoRenderProps;
   serveUrl: string;
 }
 
@@ -10,7 +13,7 @@ export async function selectShortComposition(
   request: SelectShortCompositionRequest,
 ) {
   return selectComposition({
-    id: compositionId,
+    id: captionedVideoCompositionId,
     inputProps: request.inputProps,
     logLevel: 'warn',
     serveUrl: request.serveUrl,

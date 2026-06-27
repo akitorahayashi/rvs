@@ -5,28 +5,26 @@ import {
   Sequence,
   staticFile,
 } from 'remotion';
-import type { ShortRenderProps } from '../remotion/props';
+import type { CaptionedVideoRenderProps } from '../render-props';
 import { Caption } from './caption';
 
-export function Short(props: ShortRenderProps) {
+export function CaptionedVideo(props: CaptionedVideoRenderProps) {
   return (
     <AbsoluteFill style={{ backgroundColor: 'black', overflow: 'hidden' }}>
       <OffthreadVideo
-        src={staticFile(props.backgroundVideo)}
+        src={staticFile(props.sourceVideo)}
         style={{
           height: '100%',
           objectFit: 'cover',
           width: '100%',
         }}
-        volume={props.backgroundVideoVolume}
+        volume={props.sourceVideoVolume}
       />
-      {props.bgm ? (
-        <Audio
-          src={staticFile(props.bgm)}
-          trimAfter={props.durationInFrames}
-          volume={props.bgmVolume}
-        />
-      ) : null}
+      <Audio
+        src={staticFile(props.bgm)}
+        trimAfter={props.durationInFrames}
+        volume={props.bgmVolume}
+      />
       {props.narration.map((cue) => (
         <Sequence
           durationInFrames={cue.durationInFrames}
@@ -45,7 +43,13 @@ export function Short(props: ShortRenderProps) {
           from={cue.startFrame}
           key={cue.id}
         >
-          <Caption durationInFrames={cue.durationInFrames} text={cue.text} />
+          <Caption
+            bottomPercent={props.captionPosition.bottomPercent}
+            durationInFrames={cue.durationInFrames}
+            horizontalInset={props.captionPosition.horizontalInset}
+            strokeWidthPx={props.captionStrokeWidthPx}
+            text={cue.text}
+          />
         </Sequence>
       ))}
     </AbsoluteFill>
