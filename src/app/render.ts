@@ -4,19 +4,12 @@ import { MediaContractError } from '../errors';
 import { readVideoMetadata } from '../media/video';
 import { readProjectNarrationCues } from '../narration/project-timeline';
 import { toFrameNarrationCues } from '../narration/timeline';
-import { loadRenderProject } from '../projects/load';
-import { createOutputPath } from '../projects/paths';
-import {
-  createRenderProps,
-  defaultBackgroundVideoVolume,
-  defaultBgmVolume,
-  defaultNarrationVolume,
-} from '../remotion/props';
+import { createRenderProps } from '../remotion/props';
 import { renderShortVideo } from '../remotion/render';
 import { assertCuesFitVideo, toFrameCues } from '../subtitles/timing';
+import { loadReactionVerticalShort } from '../video-types/reaction-vertical-short';
 
 export interface RenderProjectRequest {
-  now?: Date;
   project: string;
   rootDirectory?: string;
 }
@@ -31,16 +24,16 @@ export async function renderProject(
   request: RenderProjectRequest,
 ): Promise<RenderProjectResult> {
   const rootDirectory = path.resolve(request.rootDirectory ?? process.cwd());
-  const project = await loadRenderProject({
-    project: request.project,
+  const project = await loadReactionVerticalShort({
+    projectFile: request.project,
     rootDirectory,
   });
-  const metadata = await readVideoMetadata(project.backgroundPath);
+  const metadata = await readVideoMetadata(project.sourcePath);
   await assertBgmCoversRenderDuration({
     bgmPath: project.bgmPath,
+    displayPath: project.displayPaths.bgm,
     durationInFrames: metadata.durationInFrames,
     fps: metadata.fps,
-    projectId: project.id,
   });
   const narrationCues = await readProjectNarrationCues({
     project,
@@ -59,51 +52,46 @@ export async function renderProject(
     durationInFrames: metadata.durationInFrames,
   });
 
-  const outputPath = await createOutputPath({
-    now: request.now,
-    projectId: project.id,
-    rootDirectory,
-  });
   const props = createRenderProps({
-    backgroundVideo: project.backgroundAssetPath,
-    backgroundVideoVolume: defaultBackgroundVideoVolume,
+    backgroundVideo: project.sourceAssetPath,
+    backgroundVideoVolume: project.volumes.source,
     bgm: project.bgmAssetPath,
-    bgmVolume: defaultBgmVolume,
+    bgmVolume: project.volumes.bgm,
     captions: captionCues,
     durationInFrames: metadata.durationInFrames,
     fps: metadata.fps,
     height: metadata.height,
     narration: narrationFrameCues,
-    narrationVolume: defaultNarrationVolume,
+    narrationVolume: project.volumes.narration,
     width: metadata.width,
   });
 
   await renderShortVideo({
     inputProps: props,
-    outputPath,
-    publicDir: project.directory,
+    outputPath: project.outputPath,
+    publicDir: rootDirectory,
     rootDirectory,
   });
 
   return {
-    outputLocation: path.relative(rootDirectory, outputPath),
-    outputPath,
+    outputLocation: project.displayPaths.output,
+    outputPath: project.outputPath,
     projectId: project.id,
   };
 }
 
 export async function assertBgmCoversRenderDuration(request: {
   bgmPath?: string;
+  displayPath?: string;
   durationInFrames: number;
   fps: number;
-  projectId: string;
   readDuration?: typeof readAudioDuration;
 }): Promise<void> {
   if (!request.bgmPath) {
     return;
   }
 
-  const displayPath = `projects/${request.projectId}/bgm.mp3`;
+  const displayPath = request.displayPath ?? request.bgmPath;
   const bgmDurationSeconds = await (request.readDuration ?? readAudioDuration)(
     request.bgmPath,
     displayPath,

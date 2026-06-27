@@ -67,9 +67,9 @@ export interface CreateRenderPropsRequest {
 }
 
 export const defaultRenderProps = parseShortRenderProps({
-  backgroundVideo: 'background.mp4',
+  backgroundVideo: 'media/reaction_vertical_short/source/source.mp4',
   backgroundVideoVolume: defaultBackgroundVideoVolume,
-  bgm: undefined,
+  bgm: 'media/bgm/music.mp3',
   bgmVolume: defaultBgmVolume,
   captions: [],
   durationInFrames: 1,

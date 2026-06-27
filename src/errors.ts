@@ -9,7 +9,7 @@ export class AppError extends Error {
   }
 }
 
-export class CaptionBlockContractError extends AppError {}
+export class CaptionContractError extends AppError {}
 
 export class ProjectContractError extends AppError {}
 

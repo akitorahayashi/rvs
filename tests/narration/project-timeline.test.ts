@@ -13,11 +13,17 @@ const rootDirectory = path.join(
 describe('readProjectNarrationCues', () => {
   test('keeps captions for subtitle text when narration is provided', async () => {
     await resetRoot();
-    const projectDirectory = path.join(rootDirectory, 'projects', 'demo');
-    const audioDirectory = path.join(projectDirectory, 'audio');
-    await mkdir(audioDirectory, { recursive: true });
+    const projectDirectory = path.join(
+      rootDirectory,
+      'content',
+      'reaction_vertical_short',
+      'active',
+      'demo',
+    );
+    const narrationDirectory = path.join(projectDirectory, 'narration');
+    await mkdir(narrationDirectory, { recursive: true });
     await writeFile(
-      path.join(projectDirectory, 'caption-blocks.json'),
+      path.join(projectDirectory, 'demo.captions.json'),
       JSON.stringify({
         blocks: [
           {
@@ -26,23 +32,27 @@ describe('readProjectNarrationCues', () => {
             narration: '読み上げる音声',
           },
         ],
-        format: 'caption_blocks/v1',
+        tts_format: 'caption_narration/v1',
       }),
     );
-    await writeFile(path.join(audioDirectory, '01_first.mp3'), '');
+    await writeFile(path.join(narrationDirectory, '01_first.mp3'), '');
 
     const cues = await readProjectNarrationCues({
       project: {
-        audioDirectory,
-        captionBlocksPath: path.join(projectDirectory, 'caption-blocks.json'),
+        captionsPath: path.join(projectDirectory, 'demo.captions.json'),
+        displayPaths: {
+          narrationDirectory:
+            'content/reaction_vertical_short/active/demo/narration',
+        },
         id: 'demo',
+        narrationDirectory,
       },
       readDuration: async () => 1.25,
     });
 
     expect(cues).toEqual([
       {
-        audioFile: 'audio/01_first.mp3',
+        audioFile: 'narration/01_first.mp3',
         endMs: 1250,
         id: '1',
         startMs: 0,

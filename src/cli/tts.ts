@@ -5,10 +5,10 @@ import { CommandLineError } from '../errors';
 export class TtsCommand extends Command {
   static override paths = [['tts']];
   static override usage = Command.Usage({
-    description: 'Generate project narration MP3 files.',
+    description: 'Generate narration MP3 files for one captions JSON file.',
   });
 
-  project = Option.String({ name: 'project', required: true });
+  captions = Option.String({ name: 'captions-file', required: true });
   extra = Option.Rest();
 
   async execute(): Promise<void> {
@@ -17,7 +17,7 @@ export class TtsCommand extends Command {
         `Unexpected positional arguments: ${this.extra.join(', ')}.`,
       );
     }
-    const result = await runTts({ project: this.project });
-    process.stdout.write(`${result.audioLocation}\n`);
+    const result = await runTts({ captions: this.captions });
+    process.stdout.write(`${result.narrationLocation}\n`);
   }
 }

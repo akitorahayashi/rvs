@@ -6,22 +6,22 @@ import {
   createNarrationProgress,
   type NarrationProgress,
 } from '../audio/progress';
-import { readCaptionBlocks } from '../caption-blocks/read';
+import { readCaptions } from '../captions/read';
+import { loadCaptionContent } from '../content/captions';
 import { OutputContractError } from '../errors';
-import { loadCaptionBlocksProject } from '../projects/load';
 import { narrationProfile } from '../voicevox/profile';
 import { synthesizeWav, voicevoxUrl } from '../voicevox/synthesis';
 
 export interface RunTtsRequest {
+  captions: string;
   rootDirectory?: string;
-  project: string;
   createProgress?: (total: number) => NarrationProgress;
   synthesize?: typeof synthesizeWav;
   writeMp3?: typeof writeMp3File;
 }
 
 export interface RunTtsResult {
-  audioLocation: string;
+  narrationLocation: string;
   audioPaths: string[];
   projectId: string;
 }
@@ -30,16 +30,16 @@ const synthesisConcurrency = 4;
 
 export async function runTts(request: RunTtsRequest): Promise<RunTtsResult> {
   const rootDirectory = path.resolve(request.rootDirectory ?? process.cwd());
-  const project = await loadCaptionBlocksProject({
-    project: request.project,
+  const content = await loadCaptionContent({
+    captionsFile: request.captions,
     rootDirectory,
   });
-  const blocks = await readCaptionBlocks(project.captionBlocksPath);
+  const blocks = await readCaptions(content.captionsPath);
   const createProgress = request.createProgress ?? createNarrationProgress;
   const synthesize = request.synthesize ?? synthesizeWav;
   const writeMp3 = request.writeMp3 ?? writeMp3File;
 
-  await resetAudioDirectory(project.audioDirectory);
+  await resetNarrationDirectory(content.narrationDirectory);
 
   const engineUrl = voicevoxUrl();
   const audioPaths = new Array<string>(blocks.length);
@@ -56,13 +56,13 @@ export async function runTts(request: RunTtsRequest): Promise<RunTtsResult> {
         continue;
       }
       const outputPath = path.join(
-        project.audioDirectory,
+        content.narrationDirectory,
         narrationAudioFileName(index, block.fileName),
       );
       try {
         const wavBytes = await synthesize(
           engineUrl,
-          block.narration ?? block.caption,
+          block.narration,
           narrationProfile,
         );
         await writeMp3(wavBytes, outputPath);
@@ -91,23 +91,25 @@ export async function runTts(request: RunTtsRequest): Promise<RunTtsResult> {
   }
 
   return {
-    audioLocation: path.relative(rootDirectory, project.audioDirectory),
+    narrationLocation: content.displayPaths.narrationDirectory,
     audioPaths,
-    projectId: project.id,
+    projectId: content.id,
   };
 }
 
-async function resetAudioDirectory(audioDirectory: string): Promise<void> {
+async function resetNarrationDirectory(
+  narrationDirectory: string,
+): Promise<void> {
   try {
-    const stats = await lstat(audioDirectory);
+    const stats = await lstat(narrationDirectory);
     if (stats.isSymbolicLink()) {
-      throw new OutputContractError('audio/ must not be a symlink.');
+      throw new OutputContractError('narration/ must not be a symlink.');
     }
     if (!stats.isDirectory()) {
-      throw new OutputContractError('audio/ must be a directory.');
+      throw new OutputContractError('narration/ must be a directory.');
     }
 
-    await rm(audioDirectory, { force: true, recursive: true });
+    await rm(narrationDirectory, { force: true, recursive: true });
   } catch (error: unknown) {
     if (error instanceof OutputContractError) {
       throw error;
@@ -117,7 +119,7 @@ async function resetAudioDirectory(audioDirectory: string): Promise<void> {
     }
   }
 
-  await mkdir(audioDirectory, { recursive: true });
+  await mkdir(narrationDirectory, { recursive: true });
 }
 
 function isMissingPathError(error: unknown): boolean {

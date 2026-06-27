@@ -1,10 +1,12 @@
 # dependencies (bun install)
 node_modules
 
-# output
-output/*
-!output/.gitkeep
-projects/*/audio/
+# generated and heavy media
+content/**/narration/
+media/bgm/*
+media/reaction_vertical_short/source/*
+media/reaction_vertical_short/output/*
+!media/**/.gitkeep
 
 # code coverage
 coverage
