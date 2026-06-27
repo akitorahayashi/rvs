@@ -9,7 +9,7 @@ interface CommandResult {
 
 function runCli(args: string[]): CommandResult {
   const command = Bun.spawnSync(['bun', 'src/main.ts', ...args], {
-    cwd: path.join(import.meta.dir, '..', '..'),
+    cwd: path.join(import.meta.dir, '..'),
     stderr: 'pipe',
     stdout: 'pipe',
   });

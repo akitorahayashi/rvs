@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { loadReactionVerticalShort } from '../../src/video-types/reaction-vertical-short';
+import { loadReactionVerticalShort } from '../src/video-types/reaction-vertical-short';
 
 const rootDirectory = path.join(
   process.cwd(),

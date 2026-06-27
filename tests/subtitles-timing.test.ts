@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { assertCuesFitVideo, toFrameCues } from '../../src/subtitles/timing';
+import { assertCuesFitVideo, toFrameCues } from '../src/subtitles/timing';
 
 describe('subtitle timing', () => {
   test('converts SRT millisecond timing to frame timing', () => {

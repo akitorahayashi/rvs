@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import {
   createRenderProps,
   parseShortRenderProps,
-} from '../../src/remotion/props';
+} from '../src/remotion/props';
 
 const sampleBgmVolume = 0.35;
 const sampleBackgroundVideoVolume = 0.75;

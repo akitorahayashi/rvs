@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, test } from 'bun:test';
-import { MediaContractError } from '../../src/errors';
-import { defaultVoicevoxUrl } from '../../src/voicevox/engine';
-import { narrationProfile } from '../../src/voicevox/profile';
-import { synthesizeWav, voicevoxUrl } from '../../src/voicevox/synthesis';
+import { MediaContractError } from '../src/errors';
+import { defaultVoicevoxUrl } from '../src/voicevox/engine';
+import { narrationProfile } from '../src/voicevox/profile';
+import { synthesizeWav, voicevoxUrl } from '../src/voicevox/synthesis';
 
 const originalFetch = globalThis.fetch;
 const originalEngineUrl = process.env.RVS_VOICEVOX_ENGINE_URL;

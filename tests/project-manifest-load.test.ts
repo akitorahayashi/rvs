@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { loadProjectManifest } from '../../src/project-manifest/load';
+import { loadProjectManifest } from '../src/project-manifest/load';
 
 const rootDirectory = path.join(process.cwd(), '.tmp', 'tests', 'manifest');
 

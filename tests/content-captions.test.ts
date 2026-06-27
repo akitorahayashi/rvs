@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { mkdir, rm, symlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { loadCaptionContent } from '../../src/content/captions';
+import { loadCaptionContent } from '../src/content/captions';
 
 const rootDirectory = path.join(process.cwd(), '.tmp', 'tests', 'content');
 
