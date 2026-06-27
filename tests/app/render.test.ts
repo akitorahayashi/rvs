@@ -7,7 +7,6 @@ describe('assertBgmCoversRenderDuration', () => {
       assertBgmCoversRenderDuration({
         durationInFrames: 300,
         fps: 30,
-        projectId: 'whale',
       }),
     ).resolves.toBeUndefined();
   });
@@ -17,10 +16,10 @@ describe('assertBgmCoversRenderDuration', () => {
 
     await expect(
       assertBgmCoversRenderDuration({
-        bgmPath: '/root/projects/whale/bgm.mp3',
+        bgmPath: '/root/media/bgm/music.mp3',
+        displayPath: 'media/bgm/music.mp3',
         durationInFrames: 300,
         fps: 30,
-        projectId: 'whale',
         readDuration: async (audioPath: string, displayPath: string) => {
           calls.push({ audioPath, displayPath });
           return 12;
@@ -30,8 +29,8 @@ describe('assertBgmCoversRenderDuration', () => {
 
     expect(calls).toEqual([
       {
-        audioPath: '/root/projects/whale/bgm.mp3',
-        displayPath: 'projects/whale/bgm.mp3',
+        audioPath: '/root/media/bgm/music.mp3',
+        displayPath: 'media/bgm/music.mp3',
       },
     ]);
   });
@@ -39,12 +38,12 @@ describe('assertBgmCoversRenderDuration', () => {
   test('rejects bgm shorter than the rendered background duration', async () => {
     await expect(
       assertBgmCoversRenderDuration({
-        bgmPath: '/root/projects/whale/bgm.mp3',
+        bgmPath: '/root/media/bgm/music.mp3',
+        displayPath: 'media/bgm/music.mp3',
         durationInFrames: 301,
         fps: 30,
-        projectId: 'whale',
         readDuration: async () => 10,
       }),
-    ).rejects.toThrow('projects/whale/bgm.mp3 must be at least 10.033 seconds');
+    ).rejects.toThrow('media/bgm/music.mp3 must be at least 10.033 seconds');
   });
 });

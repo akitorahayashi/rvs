@@ -3,7 +3,7 @@
 ## Purpose
 
 `rvs` is a Bun and TypeScript CLI for preparing and rendering Remotion vertical
-shorts from project directories.
+shorts from lightweight content projects and isolated media files.
 
 ## CLI
 
@@ -11,27 +11,28 @@ shorts from project directories.
 
 ## Project Contract
 
-- Authored render inputs live under `projects/<project-id>/`.
-- A project contains `background.mp4` and `caption-blocks.json`.
-- A project may include `bgm.mp3` as authored background music.
-- `caption-blocks.json` uses `format: "caption_blocks/v1"` and ordered
-  `file_name` slug/`caption` blocks, with optional `narration` for TTS-specific
-  reading.
-- `bgm.mp3`, when present, is rendered under narration and is trimmed to the
-  rendered background duration. It must be at least that long.
-- Default render volumes are defined in `src/remotion/props.ts`.
-- TTS generates numbered MP3 files from block order and `file_name`.
-- Generated narration MP3 files live under `projects/<project-id>/audio/` and
-  are ignored.
-- Generated final videos live under `output/<project-id>/<timestamp>.mp4`.
-- `output/.gitkeep` is tracked and generated videos under `output/` are ignored.
+- Lightweight authored content lives under
+  `content/reaction_vertical_short/{planned,active,published,archived}/<work>/`.
+- Each project directory contains `<work>.project.ts` and `<work>.captions.json`.
+- `<work>.project.ts` default-exports `defineProject(...)` from
+  `src/project-manifest/define.ts`.
+- `<work>.captions.json` uses `tts_format: "caption_narration/v1"` and ordered
+  `file_name`, `caption`, and `narration` blocks.
+- Shared BGM files live under `media/bgm/`.
+- Source videos live under `media/reaction_vertical_short/source/`.
+- Rendered videos live under `media/reaction_vertical_short/output/<video-name>.mp4`.
+- Generated narration MP3 files live under the project sibling `narration/`
+  directory and are ignored.
+- `.project.ts` stores source and BGM file names only; directory conventions are
+  owned by `src/video-types/reaction-vertical-short.ts`.
 - `.tmp/` is not an authored input contract.
 
 ## Implementation Notes
 
-- `caption_blocks/v1` is the only TTS input format.
+- `caption_narration/v1` is the only TTS input format.
 - VOICEVOX engine access is explicit through `RVS_VOICEVOX_ENGINE_URL` or the default local engine URL.
 - The local VOICEVOX engine runs on Docker image `voicevox/voicevox_engine:cpu-ubuntu22.04-0.25.0`.
 - Remotion rendering uses direct APIs (`@remotion/bundler`, `@remotion/renderer`, `@remotion/media-parser`); the Remotion CLI is not used.
-- Remotion root source is static; render props are passed in memory.
+- Remotion root source is static; render props are passed in memory with
+  repository-relative asset paths.
 - Do not read `.mx/*.md` unless explicitly requested by the user.

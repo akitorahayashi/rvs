@@ -2,16 +2,19 @@ import { realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { readAudioDuration } from '../audio/duration';
 import { narrationAudioFileName } from '../audio/naming';
-import { readCaptionBlocks } from '../caption-blocks/read';
+import { readCaptions } from '../captions/read';
 import { ProjectContractError } from '../errors';
 import type { NarrationCue } from './cue';
 import { scheduleNarrationCues } from './timeline';
 
 export interface ReadProjectNarrationRequest {
   project: {
-    audioDirectory: string;
-    captionBlocksPath: string;
+    captionsPath: string;
+    displayPaths: {
+      narrationDirectory: string;
+    };
     id: string;
+    narrationDirectory: string;
   };
   readDuration?: typeof readAudioDuration;
 }
@@ -19,22 +22,25 @@ export interface ReadProjectNarrationRequest {
 export async function readProjectNarrationCues(
   request: ReadProjectNarrationRequest,
 ): Promise<NarrationCue[]> {
-  const blocks = await readCaptionBlocks(request.project.captionBlocksPath);
+  const blocks = await readCaptions(request.project.captionsPath);
   const readDuration = request.readDuration ?? readAudioDuration;
-  const audioDirectory = await requireAudioDirectory(
-    request.project.audioDirectory,
-    `projects/${request.project.id}/audio`,
+  const narrationDirectory = await requireNarrationDirectory(
+    request.project.narrationDirectory,
+    request.project.displayPaths.narrationDirectory,
   );
 
   return scheduleNarrationCues(
     await Promise.all(
       blocks.map(async (block, index) => {
         const fileName = narrationAudioFileName(index, block.fileName);
-        const displayPath = `projects/${request.project.id}/audio/${fileName}`;
-        const audioPath = await requireAudioFile({
-          audioDirectory,
+        const displayPath = path.join(
+          request.project.displayPaths.narrationDirectory,
+          fileName,
+        );
+        const audioPath = await requireNarrationFile({
           displayPath,
           fileName,
+          narrationDirectory,
         });
         const durationSeconds = await readDuration(audioPath, displayPath);
 
@@ -48,12 +54,12 @@ export async function readProjectNarrationCues(
   );
 }
 
-async function requireAudioDirectory(
-  audioDirectory: string,
+async function requireNarrationDirectory(
+  narrationDirectory: string,
   displayPath: string,
 ): Promise<string> {
   try {
-    const realDirectory = await realpath(audioDirectory);
+    const realDirectory = await realpath(narrationDirectory);
     const stats = await stat(realDirectory);
 
     if (!stats.isDirectory()) {
@@ -70,12 +76,12 @@ async function requireAudioDirectory(
   }
 }
 
-async function requireAudioFile(request: {
-  audioDirectory: string;
+async function requireNarrationFile(request: {
   displayPath: string;
   fileName: string;
+  narrationDirectory: string;
 }): Promise<string> {
-  const audioPath = path.join(request.audioDirectory, request.fileName);
+  const audioPath = path.join(request.narrationDirectory, request.fileName);
 
   try {
     const realFilePath = await realpath(audioPath);
@@ -85,10 +91,10 @@ async function requireAudioFile(request: {
       throw new ProjectContractError(`${request.displayPath} must be a file.`);
     }
 
-    rejectEscapedAudioFile({
-      audioDirectory: request.audioDirectory,
+    rejectEscapedNarrationFile({
       audioPath: realFilePath,
       displayPath: request.displayPath,
+      narrationDirectory: request.narrationDirectory,
     });
 
     return realFilePath;
@@ -101,19 +107,22 @@ async function requireAudioFile(request: {
   }
 }
 
-function rejectEscapedAudioFile(request: {
-  audioDirectory: string;
+function rejectEscapedNarrationFile(request: {
   audioPath: string;
   displayPath: string;
+  narrationDirectory: string;
 }): void {
-  const relativePath = path.relative(request.audioDirectory, request.audioPath);
+  const relativePath = path.relative(
+    request.narrationDirectory,
+    request.audioPath,
+  );
   if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
     throw new ProjectContractError(
-      `${request.displayPath} must stay inside audio/.`,
+      `${request.displayPath} must stay inside narration/.`,
     );
   }
 }
 
 function toAudioAssetPath(fileName: string): string {
-  return path.posix.join('audio', fileName);
+  return path.posix.join('narration', fileName);
 }

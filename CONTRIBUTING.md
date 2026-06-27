@@ -7,8 +7,10 @@ The repository owns:
 - the CLI entrypoint in `src/main.ts`
 - the CLI boundary in `src/cli/`
 - the application layer in `src/app/`
-- the project contract in `src/projects/`
-- the caption block contract in `src/caption-blocks/`
+- the content path contract in `src/content/`
+- the captions document contract in `src/captions/`
+- the project manifest contract in `src/project-manifest/`
+- the video type contract in `src/video-types/`
 - the narration audio contract in `src/audio/`
 - the VOICEVOX client in `src/voicevox/`
 - the subtitle contract in `src/subtitles/`
@@ -24,8 +26,8 @@ The repository owns:
 
 The repository-owned tasks are:
 
-- `bun run rvs render <project-id>`
-- `bun run rvs tts <project-id>`
+- `bun run rvs render <project-file>`
+- `bun run rvs tts <captions-file>`
 - `bun run fix`
 - `bun run check`
 - `bun run test`

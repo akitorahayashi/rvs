@@ -11,20 +11,21 @@ const createSilentProgress = () => ({
 });
 
 describe('runTts', () => {
-  test('generates numbered MP3 files from caption blocks', async () => {
+  test('generates numbered MP3 files from captions', async () => {
     await resetRoot();
-    await createCaptionBlocksProject('demo');
-    await mkdir(path.join(rootDirectory, 'projects', 'demo', 'audio'), {
+    await createCaptionsProject('demo');
+    await mkdir(path.join(projectDirectory('demo'), 'narration'), {
       recursive: true,
     });
     await writeFile(
-      path.join(rootDirectory, 'projects', 'demo', 'audio', 'stale.mp3'),
+      path.join(projectDirectory('demo'), 'narration', 'stale.mp3'),
       'stale',
     );
 
     const result = await runTts({
+      captions:
+        'content/reaction_vertical_short/active/demo/demo.captions.json',
       createProgress: createSilentProgress,
-      project: 'demo',
       rootDirectory,
       synthesize: async (
         _engineUrl: string,
@@ -38,27 +39,27 @@ describe('runTts', () => {
       },
     });
 
-    expect(result.audioLocation).toBe('projects/demo/audio');
+    expect(result.narrationLocation).toBe(
+      'content/reaction_vertical_short/active/demo/narration',
+    );
     expect(
       await readFile(
-        path.join(rootDirectory, 'projects', 'demo', 'audio', '01_first.mp3'),
+        path.join(projectDirectory('demo'), 'narration', '01_first.mp3'),
       ),
     ).toEqual(Buffer.from([5]));
     expect(
       await readFile(
-        path.join(rootDirectory, 'projects', 'demo', 'audio', '02_second.mp3'),
+        path.join(projectDirectory('demo'), 'narration', '02_second.mp3'),
       ),
     ).toEqual(Buffer.from([6]));
     await expect(
-      readFile(
-        path.join(rootDirectory, 'projects', 'demo', 'audio', 'stale.mp3'),
-      ),
+      readFile(path.join(projectDirectory('demo'), 'narration', 'stale.mp3')),
     ).rejects.toThrow();
   });
 
   test('uses narration when provided for synthesis', async () => {
     await resetRoot();
-    await createCaptionBlocksProject('spoken', [
+    await createCaptionsProject('spoken', [
       {
         caption: '字幕',
         file_name: 'first',
@@ -69,8 +70,9 @@ describe('runTts', () => {
     const synthesizedTexts: string[] = [];
 
     await runTts({
+      captions:
+        'content/reaction_vertical_short/active/spoken/spoken.captions.json',
       createProgress: createSilentProgress,
-      project: 'spoken',
       rootDirectory,
       synthesize: async (
         _engineUrl: string,
@@ -89,7 +91,7 @@ describe('runTts', () => {
   });
 });
 
-async function createCaptionBlocksProject(
+async function createCaptionsProject(
   id: string,
   blocks: Array<{
     caption: string;
@@ -99,21 +101,33 @@ async function createCaptionBlocksProject(
     {
       caption: 'first',
       file_name: 'first',
+      narration: 'first',
     },
     {
       caption: 'second',
       file_name: 'second',
+      narration: 'second',
     },
   ],
 ): Promise<void> {
-  const directory = path.join(rootDirectory, 'projects', id);
+  const directory = projectDirectory(id);
   await mkdir(directory, { recursive: true });
   await writeFile(
-    path.join(directory, 'caption-blocks.json'),
+    path.join(directory, `${id}.captions.json`),
     JSON.stringify({
       blocks,
-      format: 'caption_blocks/v1',
+      tts_format: 'caption_narration/v1',
     }),
+  );
+}
+
+function projectDirectory(id: string): string {
+  return path.join(
+    rootDirectory,
+    'content',
+    'reaction_vertical_short',
+    'active',
+    id,
   );
 }
 

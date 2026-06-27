@@ -16,7 +16,7 @@ export async function readVideoMetadata(
   const result = await parseVideoMetadata(videoPath);
 
   if (!result.dimensions) {
-    throw new MediaContractError('background.mp4 must contain a video track.');
+    throw new MediaContractError('source video must contain a video track.');
   }
 
   if (
@@ -25,22 +25,18 @@ export async function readVideoMetadata(
     !Number.isFinite(result.dimensions.height) ||
     result.dimensions.height <= 0
   ) {
-    throw new MediaContractError(
-      'background.mp4 must have positive dimensions.',
-    );
+    throw new MediaContractError('source video must have positive dimensions.');
   }
 
   if (
     !Number.isFinite(result.slowDurationInSeconds) ||
     result.slowDurationInSeconds <= 0
   ) {
-    throw new MediaContractError(
-      'background.mp4 must have a positive duration.',
-    );
+    throw new MediaContractError('source video must have a positive duration.');
   }
 
   if (!Number.isFinite(result.slowFps) || result.slowFps <= 0) {
-    throw new MediaContractError('background.mp4 must have a positive FPS.');
+    throw new MediaContractError('source video must have a positive FPS.');
   }
 
   return {
@@ -68,7 +64,7 @@ async function parseVideoMetadata(videoPath: string) {
     const message = error instanceof Error ? error.message : String(error);
 
     throw new MediaContractError(
-      `Failed to parse video metadata for background.mp4: ${message}`,
+      `Failed to parse source video metadata: ${message}`,
     );
   }
 }

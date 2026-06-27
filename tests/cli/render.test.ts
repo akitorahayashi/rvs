@@ -30,8 +30,8 @@ describe('render command', () => {
     const result = runCli([]);
 
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain('tts <project>');
-    expect(result.stdout).toContain('render <project>');
+    expect(result.stdout).toContain('tts <captions-file>');
+    expect(result.stdout).toContain('render <project-file>');
   });
 
   test('prints the package version', () => {
@@ -41,14 +41,14 @@ describe('render command', () => {
     expect(result.stdout).toBe('0.1.0');
   });
 
-  test('fails when a required project is missing', () => {
+  test('fails when a required project file is missing', () => {
     const result = runCli(['render']);
 
     expect(result.exitCode).toBe(1);
     expect(result.stdout).toContain('Not enough positional arguments');
   });
 
-  test('fails when a required tts project is missing', () => {
+  test('fails when a required captions file is missing', () => {
     const result = runCli(['tts']);
 
     expect(result.exitCode).toBe(1);
@@ -56,16 +56,16 @@ describe('render command', () => {
   });
 
   test('fails for unexpected positional arguments', () => {
-    const result = runCli(['render', 'demo', 'extra']);
+    const result = runCli(['render', 'demo.project.ts', 'extra']);
 
     expect(result.exitCode).toBe(1);
     expect(result.stdout).toContain('Unexpected positional arguments: extra.');
   });
 
-  test('rejects project references outside projects', () => {
-    const result = runCli(['render', '../demo']);
+  test('rejects project manifests outside the repository root', () => {
+    const result = runCli(['render', '../demo.project.ts']);
 
     expect(result.exitCode).toBe(1);
-    expect(result.stdout).toContain('safe project ID');
+    expect(result.stdout).toContain('repository root');
   });
 });

@@ -12,9 +12,9 @@ describe('Remotion props', () => {
   test('accepts valid render props', () => {
     expect(
       createRenderProps({
-        backgroundVideo: 'background.mp4',
+        backgroundVideo: 'media/reaction_vertical_short/source/demo.mp4',
         backgroundVideoVolume: sampleBackgroundVideoVolume,
-        bgm: 'bgm.mp3',
+        bgm: 'media/bgm/music.mp3',
         bgmVolume: sampleBgmVolume,
         captions: [
           {
@@ -29,7 +29,8 @@ describe('Remotion props', () => {
         height: 1280,
         narration: [
           {
-            audioFile: 'audio/01_demo.mp3',
+            audioFile:
+              'content/reaction_vertical_short/active/demo/narration/01_demo.mp3',
             durationInFrames: 30,
             id: '1',
             startFrame: 0,
@@ -39,9 +40,9 @@ describe('Remotion props', () => {
         width: 720,
       }),
     ).toEqual({
-      backgroundVideo: 'background.mp4',
+      backgroundVideo: 'media/reaction_vertical_short/source/demo.mp4',
       backgroundVideoVolume: sampleBackgroundVideoVolume,
-      bgm: 'bgm.mp3',
+      bgm: 'media/bgm/music.mp3',
       bgmVolume: sampleBgmVolume,
       captions: [
         {
@@ -56,7 +57,8 @@ describe('Remotion props', () => {
       height: 1280,
       narration: [
         {
-          audioFile: 'audio/01_demo.mp3',
+          audioFile:
+            'content/reaction_vertical_short/active/demo/narration/01_demo.mp3',
           durationInFrames: 30,
           id: '1',
           startFrame: 0,
@@ -70,7 +72,7 @@ describe('Remotion props', () => {
   test('rejects invalid cue structure and frame values', () => {
     expect(() =>
       parseShortRenderProps({
-        backgroundVideo: 'background.mp4',
+        backgroundVideo: 'media/reaction_vertical_short/source/demo.mp4',
         backgroundVideoVolume: sampleBackgroundVideoVolume,
         captions: [
           {
@@ -92,7 +94,7 @@ describe('Remotion props', () => {
 
     expect(() =>
       parseShortRenderProps({
-        backgroundVideo: 'background.mp4',
+        backgroundVideo: 'media/reaction_vertical_short/source/demo.mp4',
         backgroundVideoVolume: sampleBackgroundVideoVolume,
         bgm: ' ',
         bgmVolume: sampleBgmVolume,
@@ -108,7 +110,7 @@ describe('Remotion props', () => {
 
     expect(() =>
       parseShortRenderProps({
-        backgroundVideo: 'background.mp4',
+        backgroundVideo: 'media/reaction_vertical_short/source/demo.mp4',
         backgroundVideoVolume: sampleBackgroundVideoVolume,
         bgmVolume: -0.1,
         captions: [],
@@ -123,7 +125,7 @@ describe('Remotion props', () => {
 
     expect(() =>
       parseShortRenderProps({
-        backgroundVideo: 'background.mp4',
+        backgroundVideo: 'media/reaction_vertical_short/source/demo.mp4',
         backgroundVideoVolume: -0.1,
         bgmVolume: sampleBgmVolume,
         captions: [],
@@ -138,7 +140,7 @@ describe('Remotion props', () => {
 
     expect(() =>
       parseShortRenderProps({
-        backgroundVideo: 'background.mp4',
+        backgroundVideo: 'media/reaction_vertical_short/source/demo.mp4',
         backgroundVideoVolume: sampleBackgroundVideoVolume,
         bgmVolume: sampleBgmVolume,
         captions: [],

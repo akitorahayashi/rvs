@@ -11,7 +11,6 @@ export async function bundleRoot(request: BundleRootRequest): Promise<string> {
     entryPoint: path.join(
       request.rootDirectory,
       'src',
-      'rvs',
       'composition',
       'root.tsx',
     ),
