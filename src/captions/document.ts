@@ -78,7 +78,9 @@ function validateCaptionDisplayText(
   caption: string,
   context: z.RefinementCtx,
 ): void {
-  const displayTextLength = caption.replace(lineBreakPattern, '').length;
+  const displayTextLength = Array.from(
+    caption.replace(lineBreakPattern, ''),
+  ).length;
   if (displayTextLength > maxCaptionLength) {
     context.addIssue({
       code: 'too_big',

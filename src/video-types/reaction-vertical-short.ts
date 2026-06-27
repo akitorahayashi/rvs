@@ -8,6 +8,7 @@ import {
   projectIdPattern,
   rejectEscapedRoot,
 } from '../project-manifest/paths';
+import { defaultNarrationVolume } from '../remotion/props';
 import { formatZodError } from '../zod-error';
 
 export const reactionVerticalShortTypeId = 'reaction_vertical_short';
@@ -163,7 +164,7 @@ export async function loadReactionVerticalShort(
     videoName: project.video.name,
     volumes: {
       bgm: project.audio.bgmVolume,
-      narration: project.audio.narration?.volume ?? 1.5,
+      narration: project.audio.narration?.volume ?? defaultNarrationVolume,
       source: project.video.sourceVolume,
     },
   };
