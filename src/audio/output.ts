@@ -14,10 +14,10 @@ export async function resetOutputDirectory(outdir: string): Promise<void> {
   try {
     const stats = await lstat(outdir);
     if (stats.isSymbolicLink()) {
-      throw new OutputContractError('narration/ must not be a symlink.');
+      throw new OutputContractError(`${outdir} must not be a symlink.`);
     }
     if (!stats.isDirectory()) {
-      throw new OutputContractError('narration/ must be a directory.');
+      throw new OutputContractError(`${outdir} must be a directory.`);
     }
 
     await rm(outdir, { force: true, recursive: true });

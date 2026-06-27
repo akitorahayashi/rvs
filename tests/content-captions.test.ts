@@ -35,7 +35,9 @@ describe('resetOutputDirectory', () => {
 
     await expect(
       resetOutputDirectory(path.join(projectDirectory, 'narration')),
-    ).rejects.toThrow('narration/ must not be a symlink');
+    ).rejects.toThrow(
+      `${path.join(projectDirectory, 'narration')} must not be a symlink`,
+    );
   });
 });
 
