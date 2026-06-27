@@ -7,10 +7,12 @@ import type { ProjectManifest } from './define';
 import { projectFileSuffix, rejectEscapedRoot } from './paths';
 
 export interface LoadedProjectManifest {
+  base: ProjectManifest;
   directory: string;
   displayPath: string;
   file: string;
   manifest: unknown;
+  rootDirectory: string;
 }
 
 export interface LoadProjectManifestRequest {
@@ -56,10 +58,12 @@ export async function loadProjectManifest(
   }
 
   return {
+    base: loadedModule.default,
     directory: path.dirname(file),
     displayPath: displayPath(rootDirectory, file),
     file,
     manifest: loadedModule.default,
+    rootDirectory,
   };
 }
 

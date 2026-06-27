@@ -1,21 +1,24 @@
 import { describe, expect, test } from 'bun:test';
-import {
-  createRenderProps,
-  parseShortRenderProps,
-} from '../src/remotion/props';
+import { parseCaptionedVideoRenderProps } from '../src/captioned-video/render-props';
 
 const sampleBgmVolume = 0.35;
-const sampleBackgroundVideoVolume = 0.75;
+const sampleSourceVideoVolume = 0.75;
 const sampleNarrationVolume = 1.25;
 
-describe('Remotion props', () => {
+describe('captioned video render props', () => {
   test('accepts valid render props', () => {
     expect(
-      createRenderProps({
-        backgroundVideo: 'media/reaction_vertical_short/source/demo.mp4',
-        backgroundVideoVolume: sampleBackgroundVideoVolume,
+      parseCaptionedVideoRenderProps({
+        sourceVideo: 'media/reaction_vertical_short/source/demo.mp4',
+        sourceVideoVolume: sampleSourceVideoVolume,
         bgm: 'media/bgm/music.mp3',
         bgmVolume: sampleBgmVolume,
+        captionPosition: {
+          bottomPercent: 18,
+          horizontalInset: 48,
+          type: 'bottomBand',
+        },
+        captionStrokeWidthPx: 0,
         captions: [
           {
             durationInFrames: 30,
@@ -40,10 +43,16 @@ describe('Remotion props', () => {
         width: 720,
       }),
     ).toEqual({
-      backgroundVideo: 'media/reaction_vertical_short/source/demo.mp4',
-      backgroundVideoVolume: sampleBackgroundVideoVolume,
+      sourceVideo: 'media/reaction_vertical_short/source/demo.mp4',
+      sourceVideoVolume: sampleSourceVideoVolume,
       bgm: 'media/bgm/music.mp3',
       bgmVolume: sampleBgmVolume,
+      captionPosition: {
+        bottomPercent: 18,
+        horizontalInset: 48,
+        type: 'bottomBand',
+      },
+      captionStrokeWidthPx: 0,
       captions: [
         {
           durationInFrames: 30,
@@ -71,9 +80,10 @@ describe('Remotion props', () => {
 
   test('rejects invalid cue structure and frame values', () => {
     expect(() =>
-      parseShortRenderProps({
-        backgroundVideo: 'media/reaction_vertical_short/source/demo.mp4',
-        backgroundVideoVolume: sampleBackgroundVideoVolume,
+      parseCaptionedVideoRenderProps({
+        sourceVideo: 'media/reaction_vertical_short/source/demo.mp4',
+        sourceVideoVolume: sampleSourceVideoVolume,
+        bgm: 'media/bgm/music.mp3',
         captions: [
           {
             durationInFrames: 0,
@@ -89,15 +99,27 @@ describe('Remotion props', () => {
         narrationVolume: sampleNarrationVolume,
         width: 720,
         bgmVolume: sampleBgmVolume,
+        captionPosition: {
+          bottomPercent: 18,
+          horizontalInset: 48,
+          type: 'bottomBand',
+        },
+        captionStrokeWidthPx: 0,
       }),
     ).toThrow('captions.0.durationInFrames');
 
     expect(() =>
-      parseShortRenderProps({
-        backgroundVideo: 'media/reaction_vertical_short/source/demo.mp4',
-        backgroundVideoVolume: sampleBackgroundVideoVolume,
+      parseCaptionedVideoRenderProps({
+        sourceVideo: 'media/reaction_vertical_short/source/demo.mp4',
+        sourceVideoVolume: sampleSourceVideoVolume,
         bgm: ' ',
         bgmVolume: sampleBgmVolume,
+        captionPosition: {
+          bottomPercent: 18,
+          horizontalInset: 48,
+          type: 'bottomBand',
+        },
+        captionStrokeWidthPx: 0,
         captions: [],
         durationInFrames: 30,
         fps: 30,
@@ -109,10 +131,17 @@ describe('Remotion props', () => {
     ).toThrow('bgm');
 
     expect(() =>
-      parseShortRenderProps({
-        backgroundVideo: 'media/reaction_vertical_short/source/demo.mp4',
-        backgroundVideoVolume: sampleBackgroundVideoVolume,
+      parseCaptionedVideoRenderProps({
+        sourceVideo: 'media/reaction_vertical_short/source/demo.mp4',
+        sourceVideoVolume: sampleSourceVideoVolume,
+        bgm: 'media/bgm/music.mp3',
         bgmVolume: -0.1,
+        captionPosition: {
+          bottomPercent: 18,
+          horizontalInset: 48,
+          type: 'bottomBand',
+        },
+        captionStrokeWidthPx: 0,
         captions: [],
         durationInFrames: 30,
         fps: 30,
@@ -124,10 +153,17 @@ describe('Remotion props', () => {
     ).toThrow('bgmVolume');
 
     expect(() =>
-      parseShortRenderProps({
-        backgroundVideo: 'media/reaction_vertical_short/source/demo.mp4',
-        backgroundVideoVolume: -0.1,
+      parseCaptionedVideoRenderProps({
+        sourceVideo: 'media/reaction_vertical_short/source/demo.mp4',
+        sourceVideoVolume: -0.1,
+        bgm: 'media/bgm/music.mp3',
         bgmVolume: sampleBgmVolume,
+        captionPosition: {
+          bottomPercent: 18,
+          horizontalInset: 48,
+          type: 'bottomBand',
+        },
+        captionStrokeWidthPx: 0,
         captions: [],
         durationInFrames: 30,
         fps: 30,
@@ -136,13 +172,20 @@ describe('Remotion props', () => {
         narrationVolume: sampleNarrationVolume,
         width: 720,
       }),
-    ).toThrow('backgroundVideoVolume');
+    ).toThrow('sourceVideoVolume');
 
     expect(() =>
-      parseShortRenderProps({
-        backgroundVideo: 'media/reaction_vertical_short/source/demo.mp4',
-        backgroundVideoVolume: sampleBackgroundVideoVolume,
+      parseCaptionedVideoRenderProps({
+        sourceVideo: 'media/reaction_vertical_short/source/demo.mp4',
+        sourceVideoVolume: sampleSourceVideoVolume,
+        bgm: 'media/bgm/music.mp3',
         bgmVolume: sampleBgmVolume,
+        captionPosition: {
+          bottomPercent: 18,
+          horizontalInset: 48,
+          type: 'bottomBand',
+        },
+        captionStrokeWidthPx: 0,
         captions: [],
         durationInFrames: 30,
         fps: 30,

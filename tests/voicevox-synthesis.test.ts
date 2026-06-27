@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, test } from 'bun:test';
 import { MediaContractError } from '../src/errors';
+import { narrationProfile } from '../src/speech/formats/caption-narration-v1';
 import { defaultVoicevoxUrl } from '../src/voicevox/engine';
-import { narrationProfile } from '../src/voicevox/profile';
 import { synthesizeWav, voicevoxUrl } from '../src/voicevox/synthesis';
 
 const originalFetch = globalThis.fetch;

@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'bun:test';
-import { parseCaptionDocument } from '../../src/captions/document';
+import { parseCaptionBlocks } from '../../src/speech/formats/caption-narration-v1';
 
-describe('parseCaptionDocument', () => {
+describe('parseCaptionBlocks', () => {
   test('parses caption narration documents', () => {
     expect(
-      parseCaptionDocument({
+      parseCaptionBlocks({
         blocks: [
           {
             caption: ' 無料のベビーシッター ',
@@ -35,7 +35,7 @@ describe('parseCaptionDocument', () => {
 
   test('rejects duplicate file names', () => {
     expect(() =>
-      parseCaptionDocument({
+      parseCaptionBlocks({
         blocks: [
           {
             caption: 'first',
@@ -50,12 +50,12 @@ describe('parseCaptionDocument', () => {
         ],
         tts_format: 'caption_narration/v1',
       }),
-    ).toThrow("file_name 'same' is not unique");
+    ).toThrow("duplicate file_name 'same'");
   });
 
   test('rejects captions longer than 15 display characters', () => {
     expect(() =>
-      parseCaptionDocument({
+      parseCaptionBlocks({
         blocks: [
           {
             caption: '1234567890123456',
@@ -70,7 +70,7 @@ describe('parseCaptionDocument', () => {
 
   test('allows line breaks without counting them as display characters', () => {
     expect(
-      parseCaptionDocument({
+      parseCaptionBlocks({
         blocks: [
           {
             caption: '12345678\n9012345',
@@ -85,7 +85,7 @@ describe('parseCaptionDocument', () => {
 
   test('rejects empty caption lines', () => {
     expect(() =>
-      parseCaptionDocument({
+      parseCaptionBlocks({
         blocks: [
           {
             caption: 'hello\n\nworld',
@@ -100,7 +100,7 @@ describe('parseCaptionDocument', () => {
 
   test('rejects file names with extensions or path separators', () => {
     expect(() =>
-      parseCaptionDocument({
+      parseCaptionBlocks({
         blocks: [
           {
             caption: 'hello',
@@ -110,9 +110,9 @@ describe('parseCaptionDocument', () => {
         ],
         tts_format: 'caption_narration/v1',
       }),
-    ).toThrow('lower snake name');
+    ).toThrow('file_name');
     expect(() =>
-      parseCaptionDocument({
+      parseCaptionBlocks({
         blocks: [
           {
             caption: 'hello',
@@ -122,12 +122,12 @@ describe('parseCaptionDocument', () => {
         ],
         tts_format: 'caption_narration/v1',
       }),
-    ).toThrow('lower snake name');
+    ).toThrow('file_name');
   });
 
   test('rejects missing narration', () => {
     expect(() =>
-      parseCaptionDocument({
+      parseCaptionBlocks({
         blocks: [
           {
             caption: 'hello',
@@ -141,7 +141,7 @@ describe('parseCaptionDocument', () => {
 
   test('rejects unknown document and block properties', () => {
     expect(() =>
-      parseCaptionDocument({
+      parseCaptionBlocks({
         blocks: [
           {
             caption: 'hello',

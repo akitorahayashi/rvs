@@ -11,3 +11,7 @@ export interface CaptionCue {
   startFrame: number;
   text: string;
 }
+
+export interface NarrationCue extends SubtitleCue {
+  audioFile: string;
+}

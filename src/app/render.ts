@@ -1,13 +1,17 @@
+import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { readAudioDuration } from '../audio/duration';
+import {
+  type PreparedCaptionedVideoRenderInput,
+  prepareCaptionedVideoRenderInput,
+} from '../captioned-video/render-input';
+import {
+  type CaptionedVideoRenderProps,
+  parseCaptionedVideoRenderProps,
+} from '../captioned-video/render-props';
 import { MediaContractError } from '../errors';
-import { readVideoMetadata } from '../media/video';
-import { readProjectNarrationCues } from '../narration/project-timeline';
-import { toFrameNarrationCues } from '../narration/timeline';
-import { createRenderProps } from '../remotion/props';
-import { renderShortVideo } from '../remotion/render';
-import { assertCuesFitVideo, toFrameCues } from '../subtitles/timing';
-import { loadReactionVerticalShort } from '../video-types/reaction-vertical-short';
+import { renderCaptionedVideo } from '../remotion/render';
+import { loadVideoProject } from '../video-types/registry';
 
 export interface RenderProjectRequest {
   project: string;
@@ -24,60 +28,65 @@ export async function renderProject(
   request: RenderProjectRequest,
 ): Promise<RenderProjectResult> {
   const rootDirectory = path.resolve(request.rootDirectory ?? process.cwd());
-  const project = await loadReactionVerticalShort({
+  const loaded = await loadVideoProject({
     projectFile: request.project,
     rootDirectory,
   });
-  const metadata = await readVideoMetadata(project.sourcePath);
+  const binding = loaded.captionedVideo;
+  const prepared = await prepareCaptionedVideoRenderInput({
+    binding,
+  });
   await assertBgmCoversRenderDuration({
-    bgmPath: project.bgmPath,
-    displayPath: project.displayPaths.bgm,
-    durationInFrames: metadata.durationInFrames,
-    fps: metadata.fps,
-  });
-  const narrationCues = await readProjectNarrationCues({
-    project,
-  });
-  const captionCues = toFrameCues({
-    cues: narrationCues,
-    fps: metadata.fps,
-  });
-  const narrationFrameCues = toFrameNarrationCues({
-    cues: narrationCues,
-    fps: metadata.fps,
+    bgmPath: prepared.bgmPath,
+    displayPath: binding.displayPaths.bgm,
+    durationInFrames: prepared.durationInFrames,
+    fps: binding.settings.canvas.fps,
   });
 
-  assertCuesFitVideo({
-    cues: captionCues,
-    durationInFrames: metadata.durationInFrames,
+  const inputProps = createInputProps({
+    binding,
+    prepared,
   });
+  await mkdir(path.dirname(prepared.outputPath), { recursive: true });
 
-  const props = createRenderProps({
-    backgroundVideo: project.sourceAssetPath,
-    backgroundVideoVolume: project.volumes.source,
-    bgm: project.bgmAssetPath,
-    bgmVolume: project.volumes.bgm,
-    captions: captionCues,
-    durationInFrames: metadata.durationInFrames,
-    fps: metadata.fps,
-    height: metadata.height,
-    narration: narrationFrameCues,
-    narrationVolume: project.volumes.narration,
-    width: metadata.width,
-  });
-
-  await renderShortVideo({
-    inputProps: props,
-    outputPath: project.outputPath,
+  await renderCaptionedVideo({
+    inputProps,
+    outputPath: prepared.outputPath,
     publicDir: rootDirectory,
     rootDirectory,
   });
 
   return {
-    outputLocation: project.displayPaths.output,
-    outputPath: project.outputPath,
-    projectId: project.id,
+    outputLocation: binding.displayPaths.output,
+    outputPath: prepared.outputPath,
+    projectId: binding.id,
   };
+}
+
+function createInputProps(request: {
+  binding: Awaited<ReturnType<typeof loadVideoProject>>['captionedVideo'];
+  prepared: PreparedCaptionedVideoRenderInput;
+}): CaptionedVideoRenderProps {
+  return parseCaptionedVideoRenderProps({
+    bgm: request.binding.displayPaths.bgm,
+    bgmVolume: request.binding.settings.audio.bgmVolume,
+    captions: request.prepared.captions,
+    captionPosition: request.binding.settings.captions.position,
+    captionStrokeWidthPx: request.binding.settings.captions.strokeWidthPx,
+    durationInFrames: request.prepared.durationInFrames,
+    fps: request.binding.settings.canvas.fps,
+    height: request.binding.settings.canvas.height,
+    narration: request.prepared.narration.map((cue) => ({
+      audioFile: path.posix.join('narration', path.basename(cue.sourcePath)),
+      durationInFrames: cue.durationInFrames,
+      id: cue.id,
+      startFrame: cue.startFrame,
+    })),
+    narrationVolume: request.binding.settings.audio.narrationVolume,
+    sourceVideo: request.binding.displayPaths.source,
+    sourceVideoVolume: request.binding.settings.audio.sourceVideoVolume,
+    width: request.binding.settings.canvas.width,
+  });
 }
 
 export async function assertBgmCoversRenderDuration(request: {
@@ -100,7 +109,7 @@ export async function assertBgmCoversRenderDuration(request: {
 
   if (bgmDurationSeconds < requiredDurationSeconds) {
     throw new MediaContractError(
-      `${displayPath} must be at least ${requiredDurationSeconds.toFixed(3)} seconds to cover the rendered background duration, but was ${bgmDurationSeconds.toFixed(3)} seconds.`,
+      `${displayPath} must be at least ${requiredDurationSeconds.toFixed(3)} seconds to cover the rendered source video duration, but was ${bgmDurationSeconds.toFixed(3)} seconds.`,
     );
   }
 }
