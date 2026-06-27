@@ -23,6 +23,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "remotion": "4.0.454",
+    "vcvx-ts": "github:akitorahayashi/vcvx-ts#d4a593a",
     "zod": "^4.4.3"
   },
   "devDependencies": {

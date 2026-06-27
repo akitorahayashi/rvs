@@ -1,16 +1,16 @@
 import { renderMedia } from '@remotion/renderer';
+import type { CaptionedVideoRenderProps } from '../captioned-video/render-props';
 import { bundleRoot } from './bundle';
 import { selectShortComposition } from './composition';
-import type { ShortRenderProps } from './props';
 
 export interface RenderShortVideoRequest {
-  inputProps: ShortRenderProps;
+  inputProps: CaptionedVideoRenderProps;
   outputPath: string;
   publicDir: string;
   rootDirectory: string;
 }
 
-export async function renderShortVideo(
+export async function renderCaptionedVideo(
   request: RenderShortVideoRequest,
 ): Promise<void> {
   const serveUrl = await bundleRoot({

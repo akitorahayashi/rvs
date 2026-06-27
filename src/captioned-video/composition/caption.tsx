@@ -1,9 +1,25 @@
+import type { CSSProperties } from 'react';
 import { interpolate, useCurrentFrame } from 'remotion';
 
 export interface CaptionProps {
+  bottomPercent: number;
   durationInFrames: number;
+  horizontalInset: number;
+  strokeWidthPx: number;
   text: string;
 }
+
+const captionTextStyle: CSSProperties = {
+  color: 'white',
+  fontFamily:
+    'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  fontSize: 58,
+  fontWeight: 800,
+  lineHeight: 1.24,
+  textAlign: 'center',
+  whiteSpace: 'pre-wrap',
+  wordBreak: 'keep-all',
+};
 
 export function Caption(props: CaptionProps) {
   const frame = useCurrentFrame();
@@ -15,34 +31,40 @@ export function Caption(props: CaptionProps) {
   return (
     <div
       style={{
-        alignItems: 'center',
-        bottom: '18%',
-        display: 'flex',
-        justifyContent: 'center',
-        left: 48,
+        bottom: `${props.bottomPercent}%`,
+        left: props.horizontalInset,
         opacity: animation.opacity,
         position: 'absolute',
-        right: 48,
+        right: props.horizontalInset,
         transform: `translateY(${animation.translateY}px) scale(${animation.scale})`,
       }}
     >
       <div
         style={{
-          color: 'white',
-          fontFamily:
-            'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-          fontSize: 54,
-          fontWeight: 800,
-          lineHeight: 1.24,
-          maxWidth: '100%',
-          padding: '18px 24px',
-          textAlign: 'center',
-          textShadow: '0 3px 8px rgba(0, 0, 0, 0.8)',
-          whiteSpace: 'pre-wrap',
-          wordBreak: 'keep-all',
+          position: 'relative',
         }}
       >
-        {props.text}
+        <div
+          aria-hidden
+          style={{
+            ...captionTextStyle,
+            inset: 0,
+            position: 'absolute',
+            textShadow:
+              '0 0 1.6px rgba(0, 0, 0, 0.95), 0 0 8px rgba(0, 0, 0, 0.75)',
+            WebkitTextStroke: `${props.strokeWidthPx}px black`,
+          }}
+        >
+          {props.text}
+        </div>
+        <div
+          style={{
+            ...captionTextStyle,
+            position: 'relative',
+          }}
+        >
+          {props.text}
+        </div>
       </div>
     </div>
   );
@@ -61,31 +83,10 @@ function createAnimation(request: { durationInFrames: number; frame: number }) {
     8,
     Math.max(2, Math.floor(request.durationInFrames / 3)),
   );
-  /*
-  const exitFrames = Math.min(
-    4,
-    Math.max(2, Math.floor(request.durationInFrames / 6)),
-  );
-  const exitStart = Math.max(
-    enterFrames + 1,
-    request.durationInFrames - exitFrames,
-  );
-  */
   const enter = interpolate(request.frame, [0, enterFrames], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
-  /*
-  const exit = interpolate(
-    request.frame,
-    [exitStart, request.durationInFrames],
-    [1, 0],
-    {
-      extrapolateLeft: 'clamp',
-      extrapolateRight: 'clamp',
-    },
-  );
-  */
 
   return {
     opacity: enter,

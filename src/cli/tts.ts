@@ -8,7 +8,7 @@ export class TtsCommand extends Command {
     description: 'Generate narration MP3 files for one captions JSON file.',
   });
 
-  captions = Option.String({ name: 'captions-file', required: true });
+  inputPath = Option.String({ name: 'captions-file', required: true });
   extra = Option.Rest();
 
   async execute(): Promise<void> {
@@ -17,7 +17,7 @@ export class TtsCommand extends Command {
         `Unexpected positional arguments: ${this.extra.join(', ')}.`,
       );
     }
-    const result = await runTts({ captions: this.captions });
+    const result = await runTts({ inputPath: this.inputPath });
     process.stdout.write(`${result.narrationLocation}\n`);
   }
 }

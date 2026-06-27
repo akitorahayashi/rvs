@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import type { VoicevoxProfile } from 'vcvx-ts';
 import { runTts } from '../../src/app/tts';
-import type { VoicevoxProfile } from '../../src/voicevox/profile';
 
 const rootDirectory = path.join(process.cwd(), '.tmp', 'tests', 'tts');
 const createSilentProgress = () => ({
@@ -23,7 +23,7 @@ describe('runTts', () => {
     );
 
     const result = await runTts({
-      captions:
+      inputPath:
         'content/reaction_vertical_short/active/demo/demo.captions.json',
       createProgress: createSilentProgress,
       rootDirectory,
@@ -70,7 +70,7 @@ describe('runTts', () => {
     const synthesizedTexts: string[] = [];
 
     await runTts({
-      captions:
+      inputPath:
         'content/reaction_vertical_short/active/spoken/spoken.captions.json',
       createProgress: createSilentProgress,
       rootDirectory,

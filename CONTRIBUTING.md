@@ -7,14 +7,13 @@ The repository owns:
 - the CLI entrypoint in `src/main.ts`
 - the CLI boundary in `src/cli/`
 - the application layer in `src/app/`
-- the content path contract in `src/content/`
-- the captions document contract in `src/captions/`
+- the captioned video production domain in `src/captioned-video/`
 - the project manifest contract in `src/project-manifest/`
+- the speech and TTS format domain in `src/speech/`
 - the video type contract in `src/video-types/`
 - the narration audio contract in `src/audio/`
+- the video metadata contract in `src/video/`
 - the VOICEVOX client in `src/voicevox/`
-- the subtitle contract in `src/subtitles/`
-- the Remotion composition in `src/composition/`
 - direct Remotion rendering in `src/remotion/`
 - the repository-owned tests in `tests/`
 - the validation surface in `package.json`
